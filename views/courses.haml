@@ -1,0 +1,43 @@
+%h2=title(t(:Courses))
+- if auth_to("course_admin")
+  %a.btn.btn-default{:href=>url("/course/new")}
+    %span.glyphicon.glyphicon-plus-sign
+    =t(:New_course)
+%table.table.table-bordered
+  %thead
+    %th=t(:Id)
+    %th=t(:Name)
+    %th=t(:Description)
+    %th=t(:Teacher)
+    %th=t(:Active)
+    %th=t(:Assessments)
+    - if auth_to("course_admin")
+      %th=t(:Actions)
+  %tbody
+    - @courses.each do |c|
+      %tr
+        %td=c.id
+        %td
+          %a{:href=>url("/course/#{c.id}")}=c.name
+        %td=c.description
+        %td=c.teacher_name
+        %td=c.active
+        %td
+          - c_assessments=c.assessments
+          - if c_assessments.count>0
+            %ul
+              - c_assessments.each do |assessment|
+                %li
+                  %a{:href=>url("/assessment/#{assessment.id}")}=assessment.name
+          - else
+            =t(:No_assessments)
+        %td
+          - if auth_to("course_admin")
+            .btn-group.btn-group-sm
+              %a.btn.btn-default{:href=>url("/course/#{c.id}/edit")}
+                %span.glyphicon.glyphicon-pencil
+                =t(:Edit)
+              %a.btn.btn-default{:href=>url("/course/#{c.id}/delete")}
+                %span.glyphicon.glyphicon-remove
+                =t(:Delete)
+

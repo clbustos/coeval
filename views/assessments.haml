@@ -1,0 +1,33 @@
+%h2=title(t(:Assessments))
+- if auth_to("assessment_admin")
+  %a.btn.btn-default{:href=>url("/assessment/new")}
+    %span.glyphicon.glyphicon-plus-sign
+    =t(:New_assessment)
+%table.table.table-bordered
+  %thead
+    %th=t(:Id)
+    %th=t(:Course)
+    %th=t(:Name)
+    %th=t(:Description)
+    %th=t(:Active)
+    - if auth_to("assessment_admin")
+      %th=t(:Actions)
+  %tbody
+    - @assessments.each do |assessment|
+      %tr
+        %td=assessment.id
+        %td=@courses_h[assessment[:course_id]]
+        %td
+          %a{:href=>url("/assessment/#{assessment.id}")}=assessment.name
+        %td=assessment.description
+        %td=assessment.active
+        %td
+          - if auth_to("assessment_admin")
+            .btn-group.btn-group-sm
+              %a.btn.btn-default{:href=>url("/assessment/#{assessment.id}/edit")}
+                %span.glyphicon.glyphicon-pencil
+                =t(:Edit)
+              %a.btn.btn-default{:href=>url("/assessment/#{assessment.id}/delete")}
+                %span.glyphicon.glyphicon-remove
+                =t(:Delete)
+

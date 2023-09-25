@@ -1,0 +1,41 @@
+.heading=t_course_title(@course[:name],:View)
+%ul.breadcrumb
+  %li
+    %a{:href=>url("/courses")}=t(:Courses)
+  %li.active=@course[:name]
+
+%div.list-group
+  %div{:class=>"list-group-item"}
+    %span{:class=>"titulo"}=t(:Id)
+    %span{ :name=>"name"}=@course[:id]
+  %div{:class=>"list-group-item"}
+    %span{:class=>"titulo"}=t(:Name)
+    %span{ :name=>"name"}=@course[:name]
+  %div{:class=>"list-group-item"}
+    %span{:class=>"titulo"}=t(:Description)
+    =@course[:description]
+  %div{:class=>"list-group-item"}
+    %span{:class=>"titulo"}=t(:Active)
+    =t_yes_no_nil(@course[:active])
+  %div{:class=>"list-group-item"}
+    %h4{:class=>"list-group-item-heading"}=t(:Assessments)
+    - if @course.assessments
+      %ul
+        - @course.assessments.each do |assessment|
+          %li
+            %a{:href=>url("/assessment/#{assessment[:id]}")}=assessment[:name]
+    - else
+      %p
+        %em=t(:No_assessments)
+  %div{:class=>"list-group-item"}
+    %span{:class=>"titulo"}=t(:Teacher)
+    %span=@course.teacher_name
+  - if auth_to("course_view")
+    %div{:class=>"list-group-item"}
+      %span{:class=>"titulo"}=t(:Students)
+      %ul.list-group
+        - @course.students.each do |student|
+          %li.list-group-item=student[:name]
+  %div{:class=>"list-group-item"}
+    %h4{:class=>"list-group-item-heading"}=t(:Actions)
+    %p=partial(:course_buttons, :locals=>{:course=>@course})

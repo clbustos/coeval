@@ -1,0 +1,7 @@
+%h2=t(:Dashboard_user, user_name:user[:name])
+- udi=UserDashboardInfo.new(user)
+- user.assessments.where(:active=>true).each do |assessment|
+  =partial(:dashboard_assessment, :locals=>{:user=>user, :assessment=>assessment, :udi=>udi})
+- if user.assessments.where(:active=>true).count==0
+  %p
+    %em=t(:No_assessments_for_this_user)

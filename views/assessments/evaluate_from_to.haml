@@ -1,0 +1,67 @@
+- assessment_complete=@cem.student_assessment[:complete]
+.header
+  %h2=title(t(:evaluate_from_to, :assessment=>@assessment[:name], :student_from=>@student_from[:name], :student_to=>@student_to[:name]))
+%ul.breadcrumb
+  %li
+    %a{:href=>url("/courses")}=t(:Courses)
+  %li
+    %a{:href=>url("/course/#{@assessment[:course_id]}")}=@assessment.course_name
+  %li.active=@assessment[:name]
+
+%div.list-group
+  - if @student_from[:id]==@student_to[:id]
+    %div.list-group-item
+      %span{:class=>"titulo"}=t(:Self_evaluation)
+      %span{ :name=>"name"}=@student_from[:name]
+  - else
+    %div.list-group-item
+      %span{:class=>"titulo"}=t(:Evaluator)
+      %span{ :name=>"name"}=@student_from[:name]
+    %div.list-group-item
+      %span{:class=>"titulo"}=t(:Evaluatee)
+      %span{ :name=>"name"}=@student_to[:name]
+      - if assessment_complete
+        %span.badge.badge-pill=t(:Assessment_complete)
+  - if assessment_complete
+    %div.list-group-item.list-group-item-success
+      %span{:class=>'titulo'}=t(:Status)
+      %span{:class=>'name'}="#{t(:Sent)} : #{@cem.student_assessment[:sent]}"
+  - else
+    %div.list-group-item.list-group-item
+      %span{:class=>'titulo'}=t(:Status)
+      %span{:class=>'name'}=t(:Incomplete)
+
+%h3=t(:Criteria)
+- some_info =@cem.student_criteria.count>0
+%form{method: "post", action: url("/assessment/receive_response")}
+  - unless assessment_complete
+    %input{type: "hidden", name: 'assessment_id', value: @assessment[:id]}
+    %input{type: "hidden", name: 'student_from', value: @student_from[:id]}
+    %input{type: "hidden", name: 'student_to', value: @student_to[:id]}
+  %div.list-group
+  - @cem.structure.each do |criterion|
+
+    - criterion_id=criterion[:criterion_id]
+    - prev_value=@cem.student_criteria.fetch(criterion_id, nil)
+    %div.list-group-item{:class=>(some_info and prev_value.nil?) ? "list-group-item-warning":""}
+      %h4.list-group-item-heading= criterion[:criterion_name]
+      - if criterion[:criterion_type]=="ordered_levels"
+        - criterion[:levels].each do |level|
+          - points=level[:points]
+          %div.radio
+            %label
+              %input{type:'radio', name:criterion_id, value:points, checked: prev_value==points.to_s, disabled: assessment_complete }
+              =level[:description]
+              ="(#{t(:points, points:level[:points])})"
+      -elsif criterion[:criterion_type]=="open_ended"
+        -if assessment_complete
+          %p=@cem.student_criteria.fetch(criterion_id, "")
+        - else
+          %textarea.form-control{rows:"3", name:criterion_id}=@cem.student_criteria.fetch(criterion_id, "")
+  %div
+    - unless assessment_complete
+      %input.btn.btn-default{type:"submit", name:"save", value:t(:Save)}
+      %input.btn.btn-primary{type:"submit", name:"save_and_submit",value:t(:Save_and_Submit)}
+    %a.btn.btn-default{:href=>"/assessment/#{@assessment[:id]}"}=t(:Cancel_go_to_assessment)
+
+

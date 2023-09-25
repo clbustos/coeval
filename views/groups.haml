@@ -1,0 +1,31 @@
+%h2=title(t(:Groups))
+- if auth_to("group_admin")
+  %a.btn.btn-default{:href=>url("/group/new")}
+    %span.glyphicon.glyphicon-plus-sign
+    =t(:New_group)
+%table.table.table-bordered
+  %thead
+    %th=t(:Id)
+    %th=t(:Name)
+    %th=t(:Description)
+    %th=t(:Administrator)
+    %th=t(:Users)
+    %th=t(:Actions)
+  %tbody
+    - @groups.each do |g|
+      %tr
+        %td=g.id
+        %td=g.name
+        %td=g.description
+        %td=g.administrator_name
+        %td=g.users.map {|u| "[#{u.id}]#{u.name}"}.join(",")
+        %td
+          - if auth_to("group_admin")
+            .btn-group.btn-group-sm
+              %a.btn.btn-default{:href=>url("/group/#{g.id}/edit")}
+                %span.glyphicon.glyphicon-pencil
+                =t(:Edit)
+              %a.btn.btn-default{:href=>url("/group/#{g.id}/delete")}
+                %span.glyphicon.glyphicon-remove
+                =t(:Delete)
+

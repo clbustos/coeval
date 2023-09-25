@@ -1,0 +1,13 @@
+%p=t("login.instruction")
+%form{:method=>"post",:action=>url("login"), :class=>"horizontal"}
+  .form-group
+    %label{:class=>"control-label col-sm-2", :for=>:name}=t(:Login)
+    .col-sm-10
+      %input{:class=>"form-control",:type=>'text', :name=>"user",:placeholder=>t(:Login)}
+  .form-group
+    %label{:class=>"control-label col-sm-2", :for=>:password}=t(:Password)
+    .col-sm-10
+      %input{:class=>"form-control",:type=>'password', :name=>"password"}
+  .form-group
+    %div{:class=>"col-sm-offset-2 col-sm-10"}
+      %input.enviar{:class=>"btn btn-default",:type=>'submit', :value=>t("login.submit")}

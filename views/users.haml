@@ -1,0 +1,75 @@
+%h2=title(t(:Users))
+
+:javascript
+  $(document).ready(function() {
+    $("#all_users").click(function(e){
+      if($(this).prop('checked')) {
+        $(".user").prop('checked', true);
+      } else {
+        $(".user").prop('checked', false);
+      }
+    });
+  });
+- if auth_to("user_admin")
+  %a.btn.btn-default{:href=>url("/user/new")}
+    %span{:class=>"glyphicon glyphicon-plus"}
+    =t(:User_new)
+
+  %form{:method=>'get',:action=>url('/admin/users')}
+    %p
+      %label{:for=>'users_search'}=t(:Search)
+      %input#users_search{:type=>'text',:name=>"users_search",:value=>@usr_bus}
+      %input.btn.btn-default{:type=>"submit",:value=>"Buscar"}
+
+- if @users.count>0
+
+  %form{:method=>'post',:action=>url('/admin/users/update')}
+    %input{:type=>:hidden, :name=>:action, :id=>'form-action'}
+    .btn-toolbar
+      .btn-group.btn-group-sm{:role=>:group}
+        %button.btn.btn-default.btn-action{"data-action"=>:active}
+          %span.glyphicon.glyphicon-ok-circle
+          =t(:User_active)
+        %button.btn.btn-default.btn-action{"data-action"=>:inactive}
+          %span.glyphicon.glyphicon-ban-circle
+          =t(:User_inactive)
+        %button.btn.btn-default.btn-action{"data-action"=>:edit}
+          %span.glyphicon.glyphicon-edit
+          =t(:Edit)
+
+      .btn-group.btn-group-xs
+        %button.btn.btn-danger.btn-action{"data-action"=>:delete}
+          %span.glyphicon.glyphicon-trash
+          =t(:Search_delete)
+    %table.table.table-flush.table-striped
+      %thead
+        %th
+          %input#all_users{:type=>:checkbox, :name=>'all_users'}
+        %th=t(:User_name)
+        %th=t(:Login)
+        %th=t(:Email)
+        %th=t(:Institution)
+        %th=t(:Active)
+        %th=t(:Role)
+        - if @have_permit_password
+          %th=t(:Change_password)
+      %tbody
+        -@users.each do |per|
+          %tr
+            %td
+              - if !is_session_user(per[:id])
+                %input.user{:type=>:checkbox, :name=>"user[]", :value=>per[:id]}
+            %td=per[:name].force_encoding("UTF-8")
+            %td=per[:login]
+            %td=per[:email]
+            %td=per[:institution_id]
+            %td=per[:active] ? t("Yes") : t("No")
+            %td=per[:role_id]
+            %td
+              .btn-group
+                - if @have_permit_password
+                  %a.btn.btn-default{:href=>"/user/#{per.id}/change_password"}
+                    %span.glyphicon.glyphicon-lock
+                    =t(:Change_password)
+- else
+  .alert.alert-warning=t(:No_user_found)

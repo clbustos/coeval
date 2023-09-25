@@ -1,0 +1,6 @@
+- udi=UserDashboardInfo.new(user)
+- is_administrator = udi.is_administrator_assessment?(assessment) || (udi.is_member?(assessment) and auth_to('assessment_admin_view'))
+- ars = is_administrator ? AnalysisAssessment.new(assessment) : nil
+%p
+%div
+  %ul.nav.nav-tabs{:role=>:tablist}

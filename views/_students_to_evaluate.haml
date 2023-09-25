@@ -1,0 +1,19 @@
+- # Requires user and assessment
+- udi||=UserDashboardInfo.new(user)
+- students_to_evaluate=udi.get_users_to_assess(assessment)
+
+- if students_to_evaluate
+  %h3=t(:Students_to_evaluate)
+  %div.list-group
+  - students_to_evaluate.each do |student_id, data|
+    - class_status=class_bootstrap_evaluation(data)
+    - autoevaluacion= user[:id]==student_id
+    %a.list-group-item.list-group-item-action{:href=>url("/assessment/#{assessment[:id]}/from/#{user[:id]}/to/#{student_id}"), :class=>class_status}
+      =data[:name]
+      - if autoevaluacion
+        %span.badge.badge-light.badge-pill=t(:Self_evaluation)
+      - if data[:complete]
+        %span.badge.badge-success.badge-pill=t(:Complete)
+
+- else
+  %p=t(:no_students_to_evaluate)

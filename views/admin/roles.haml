@@ -1,0 +1,29 @@
+%h2=title(t(:Roles))
+
+- if auth_to("role_admin")
+  %a.btn.btn-default{:href=>url("/role/new")}
+    %span{:class=>"glyphicon glyphicon-plus"}
+    =t(:Role_new)
+
+
+%table.table.table-bordered
+  %thead
+    %th=t(:Id)
+    %th=t(:Description)
+    %th=t(:Actions)
+  %tbody
+    - @roles.each do |role|
+      %tr
+        %td=role[:id]
+        %td=role[:description]
+        %td=role.authorizations.map {|v|  t("auth.#{v[:id]}")}.join(", ")
+        %td
+          - if (role[:id]!='administrator' and role[:id]!='analyst') and auth_to('role_admin')
+            %a.btn.btn-default.btn-sm{:href=>url("/role/#{role[:id]}/edit")}
+              %span{:class=>"glyphicon glyphicon-pencil"}
+              =t(:Role_edit)
+          - if role.users_dataset.empty? and auth_to('role_admin')
+            %form{:method=>:post, :action=>url("/role/#{role[:id]}/delete")}
+              %button.btn.btn-danger.btn-sm
+                %span{:class=>"glyphicon glyphicon-remove"}
+                =t(:Role_delete)

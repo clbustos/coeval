@@ -1,0 +1,22 @@
+-#params sr, user
+- udi||=UserDashboardInfo.new(user)
+- is_administrator = udi.is_administrator_assessment?(assessment)
+%div{:class=>"panel #{is_administrator ? "panel-primary" : "panel-black"}"}
+  .panel-heading
+    .panel-title
+      =assessment[:name]
+      - if is_administrator
+        %span.badge=t(:Administrator)
+  .panel-body
+    .container
+      .row
+        .col-md-8=t_desc_value(:Description, lf_to_br(assessment.description))
+        .col-md-2
+          .btn-group.btn-group-sm
+            - if is_administrator
+              %a.btn.btn-default{:href=>"/assessment/#{assessment.id}"}=t(:View_assessment)
+      .row
+        .col-md-10
+          =partial(:students_to_evaluate, :locals=>{user:user, assessment:assessment})
+  .panel-footer
+    =partial(:assessment_buttons, :locals=>{:assessment=>assessment})

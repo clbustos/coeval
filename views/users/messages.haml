@@ -1,0 +1,34 @@
+.header
+  %h2=title(t("messages.Messages_for_user", user:@user[:name]))
+
+%ul.breadcrumb
+  %li
+    %a{:href=>"/user/#{@user[:id]}"}=@user[:name]
+  %li.active
+    =t(:Messages)
+
+%h3=t("messages.Personal_messages_received")
+
+.btn-group.btn-group-sm
+  %a.btn.btn-default{:href=>"/user/#{@user[:id]}/compose_message"}
+    %span.glyphicon.glyphicon-pencil
+    =t("messages.Compose")
+%p
+- if @messages_personal.empty?
+  %p
+    %em=t("messages.No_personal_messages_received")
+- else
+  %table.table-bordered.table-sm
+    - @messages_personal.each do |message|
+      =partial(:message_personal, :locals=>{:usuario=>@user, :message_per=>message, :message_type=>'received'})
+
+
+%h3=t("messages.Personal_messages_sent")
+
+- if @messages_personal_sent.empty?
+  %p
+    %em=t("messages.No_personal_messages_sent")
+- else
+  %table.table-bordered.table-sm
+    - @messages_personal_sent.each do |message|
+      =partial(:message_personal, :locals=>{:usuario=>@user, :message_per=>message, :message_type=>'sent'})
