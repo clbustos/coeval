@@ -383,7 +383,7 @@ es:
   login:
     reset_link: "Reset Password"
     forgotten_password: "Enter your email and select Submit to receive a message on your inbox"
-    software_description: "Software de Autoevaluación y Coevaluación"
+    software_description: "Software de Autoevaluación y Coevaluación educacional"
     instruction: "Ingrese su usuario y password"
     submit: "Ingresar"
     submit_forgotten: "Enviar"

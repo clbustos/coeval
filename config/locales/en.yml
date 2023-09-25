@@ -386,7 +386,7 @@ en:
   login:
     reset_link: "Resetear Password"
     forgotten_password: "Ingresa tu e-mail y envía para recibir un mensaje en tu buzón"
-    software_description: "Self-assessment and Peer-assessment Software"
+    software_description: "Self & Peer Evaluation Tool"
     instruction: "Enter user name and password"
     submit: "Enter"
     submit_forgotten: "Submit"
