@@ -754,7 +754,7 @@ es:
   Similarity: "Similitud"
   sinatra_auth:
     password_update_relogin: "El password se ha actualizado. Ingrese nuevamente."
-    password_reset_subject: "Coval Reseteo de Password"
+    password_reset_subject: "Coeval Reseteo de Password"
     password_reset_message: "Hola,\nHemos recibido una petición para resetear tu password.\nPuedes resetear tu password en el siguiente enlace:\n%{url}\n\nEquipo de Coval"
     wait_for_next_reset: "Espere para resetear su password"
     if_email_exists_forgotten_sent: "Si este e-mail está registrado, se enviará un enlace para resetear el password."

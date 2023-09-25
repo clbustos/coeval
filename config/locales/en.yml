@@ -503,7 +503,7 @@ en:
     write_new_password: "Write new password"
     repeat_new_password: "Repeat new password"
     Change_password: "Change password"
-    not_equal_password: "The passwords are not identical. Correct"
+    not_equal_password: "The passwords are not identical. Please, correct"
     password_updated: "Password updated"
   pending: "Pending"
   Percent: "Percent"
@@ -752,7 +752,7 @@ en:
   Similarity_cant_be_calculated: "Similarity with other documents can't be calculated"
   sinatra_auth:
     password_update_relogin: "Password was updated. Go to login page."
-    password_reset_subject: "Coval Password Reset"
+    password_reset_subject: "Coeval Password Reset"
     password_reset_message: "Hello,\nWe have received a request to reset your password.\nYou can reset your password using the following link:\n%{url}\nCoeval Team"
     wait_for_next_reset: "Wait before another password reset"
     if_email_exists_forgotten_sent: "If this email is registered, a password reset link has been sent."
