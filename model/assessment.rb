@@ -13,6 +13,13 @@ class Assessment < Sequel::Model
   def teams
     Team.where(:assessment_id=>self[:id])
   end
+  # For each team, retrieve the completion rate of their members
+  def teams_completation_rate
+    $db["SELECT st.team_id, t.name as team_name, COUNT(DISTINCT(student_id)) as n_students,
+SUM(CASE WHEN complete IS NULL THEN 0 ELSE 1 END) as n_responses FROM teams t INNER JOIN student_teams st on t.id=st.team_id
+LEFT JOIN student_assessments sa ON sa.student_from=st.student_id and sa.team_id=t.id
+WHERE assessment_id=1 GROUP BY team_id"].to_hash(:team_id)
+  end
   # Retrieves the list of other students of a team
   # of a given student
   def are_student_from_same_team?(student_from, student_to)

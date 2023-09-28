@@ -23,14 +23,25 @@
   %div{:class=>"list-group-item"}
     %h4{:class=>"list-group-item-heading"}=t(:Teams)
     - if @assessment.teams
-      %ul
-        - @assessment.teams.order(:name).each do |team|
-          %li
-            %a{:href=>url("team/#{team[:id]}")}=team[:name]
+      %table.table
+        %thead
+          %th=t(:Team)
+          %th=t(:Members)
+          %th=t(:Responses)
+          %th=t(:Completion)
+        %tbody
+        - @assessment.teams_completation_rate.each_pair do |team_id,team_data|
+          - log.info(team_data)
+          %tr
+            %td
+              %a{:href=>url("team/#{team_id}")}=team_data[:team_name]
+            %td=team_data[:n_students]
+            %td=team_data[:n_responses]
+            %td=percent_from_proportion( team_data[:n_responses] / team_data[:n_students]*team_data[:n_responses])
+
     - else
       %p
         %em=t(:No_teams)
 
 - if auth_to("assessment_evaluate")
-
   =partial(:students_to_evaluate, :locals=>{user:@user, assessment:@assessment})

@@ -1,4 +1,7 @@
 es:
+  Members: "Miembros"
+  Responses: "Respuestas"
+  Completion: "Completación"
   Institution: "Institución"
   Email: "Email"
   forgotten_password_link: "¿Se olvidó su password  ?"

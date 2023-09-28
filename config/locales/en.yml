@@ -1,5 +1,7 @@
 en:
-
+  Members: "Members"
+  Responses: "Responses"
+  Completion: "Completion"
   Institution: "Institution"
   Email: "Email"
   forgotten_password_link: "Forgotten password?"
