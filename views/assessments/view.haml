@@ -37,7 +37,7 @@
               %a{:href=>url("team/#{team_id}")}=team_data[:team_name]
             %td=team_data[:n_students]
             %td=team_data[:n_responses]
-            %td=percent_from_proportion( team_data[:n_responses] / team_data[:n_students]*team_data[:n_responses])
+            %td=percent_from_proportion( team_data[:n_responses] / team_data[:n_students]**2)
 
     - else
       %p
