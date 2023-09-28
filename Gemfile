@@ -25,7 +25,7 @@ gem 'serrano'
 gem 'dotenv'
 #gem 'treetop'
 gem 'nokogiri', :force_ruby_platform=> true
-#gem 'moneta'
+gem 'moneta'
 #gem 'ruby-stemmer', :git => 'https://github.com/clbustos/ruby-stemmer.git'
 #gem 'categorize' , :platforms => :ruby
 #gem 'pdf-reader'
