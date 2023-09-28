@@ -94,6 +94,10 @@ module Sinatra
         t_generic_title(title, secondary, translate_secondary)
       end
 
+      def t_team_title(team_name, secondary, translate_secondary=true)
+        title = ::I18n::t(:team_title, team_name: team_name)
+        t_generic_title(title, secondary, translate_secondary)
+      end
 
       # Set title for canonical document pages
       def t_canonical_document_title(cd_title, secondary, translate_secondary=true)

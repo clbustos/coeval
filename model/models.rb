@@ -48,14 +48,6 @@ class AssessmentCriterion < Sequel::Model
   self.unrestrict_primary_key
 end
 
-class Team < Sequel::Model
-  self.unrestrict_primary_key
-
-  def self.team_id_of_student_assessment(user_id, assessment_id)
-    $db['SELECT t.id as team_id FROM  teams t INNER JOIN student_teams st  ON t.id=st.team_id
-WHERE student_id=? and assessment_id=? ', user_id, assessment_id].get(:team_id)
-  end
-end
 
 class StudentAssessment < Sequel::Model
 

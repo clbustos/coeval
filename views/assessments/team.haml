@@ -1,0 +1,27 @@
+.header
+  %h2=t_team_title(@team.name, :View)
+%ul.breadcrumb
+  %li
+    %a{:href=>url("/courses")}=t(:Courses)
+  %li
+    %a{:href=>url("/course/#{@team.assessment[:course_id]}")}=@team.assessment.course_name
+  %li
+    %a{:href=>url("/assessment/#{@team.assessment_id}")}=@team.assessment_name
+
+  %li.active=@team[:name]
+
+%h3=t(:Members)
+
+%table.table
+  %thead
+    %th=t(:Student)
+    %th=t(:Responses)
+    %th=t(:Completion)
+  %tbody
+  - mcr=@team.members_completation_rate
+  - n_members=mcr.length
+  - mcr.each_pair do |student_id,member_data|
+    %tr
+      %td=member_data[:student_name]
+      %td=member_data[:n_responses]
+      %td=percent_from_proportion( member_data[:n_responses].to_f / n_members.to_f)

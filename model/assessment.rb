@@ -18,7 +18,7 @@ class Assessment < Sequel::Model
     $db["SELECT st.team_id, t.name as team_name, COUNT(DISTINCT(student_id)) as n_students,
 SUM(CASE WHEN complete IS NULL THEN 0 ELSE 1 END) as n_responses FROM teams t INNER JOIN student_teams st on t.id=st.team_id
 LEFT JOIN student_assessments sa ON sa.student_from=st.student_id and sa.team_id=t.id
-WHERE assessment_id=1 GROUP BY team_id"].to_hash(:team_id)
+WHERE assessment_id=? GROUP BY team_id", self[:id]].to_hash(:team_id)
   end
   # Retrieves the list of other students of a team
   # of a given student

@@ -1,4 +1,6 @@
 es:
+  Student: "Estudiante"
+  team_title: "Equipo: %{team_name}"
   Members: "Miembros"
   Responses: "Respuestas"
   Completion: "Completación"

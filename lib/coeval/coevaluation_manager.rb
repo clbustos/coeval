@@ -27,6 +27,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 module Coeval
+  # This class manage a specific assessment between two users.
+  # Verifies that the assessment could be performed, updates the assessment in database once performed,
+  # and validates if the assessment is complete
+
   class CoevaluationManager
     attr_reader :result
     attr_reader :student_assessment
