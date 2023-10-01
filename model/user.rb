@@ -56,6 +56,12 @@ class User < Sequel::Model
   def self.create_new_user(language='en')
     ultimo_usuario=$db["SELECT max(id) as max_id from users"].get(:max_id).to_i
     n_id=ultimo_usuario+1
-    User.insert(:login=>"user_#{n_id}", :name=>I18n::t(:User_only_name, :user_name=>n_id), :password=>Digest::SHA256.hexdigest("user_#{n_id}") , :role_id=>'analyst', :active=>true,:language=>language)
+    User.insert(:login=>"user_#{n_id}",
+                :name=>I18n::t(:User_only_name, :user_name=>n_id),
+                :password=>Digest::SHA256.hexdigest("user_#{n_id}") ,
+                :role_id=>'student',
+                :active=>true,
+                :language=>language,
+                :email=>'')
   end
 end

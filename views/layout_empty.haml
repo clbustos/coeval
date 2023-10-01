@@ -1,12 +1,12 @@
 !!! 5
-%html{:lang=>"es"}
+%html{:lang=>::I18n.locale}
   %head
     %meta{:charset=>'utf-8'}
     %meta{'http-equiv'=>'X-UA-Compatible',:content=>'IE=edge'}
     %meta{:name=>'viewport',:content=>'width=device-width, initial-scale=1'}
 
     
-    %title= @title.nil? ?  "Coeval" : "#{get_title_head} - Coeval"
+    %title= @title.nil? ?  t(:App_title) : "#{get_title_head} - #{t(:App_title)}"
 
     %script{:type=>'text/javascript', :src=>url('/js/jquery-3.1.0.min.js')}
     %script{:type=>'text/javascript', :src=>url('/js/bootstrap.min.js')}
@@ -38,4 +38,5 @@
       .container.text-center
         .row
           .col-md-12
-            .text-muted.credit Claudio Bustos 2023
+            .text-muted.credit=t(:footer_copyright)
+

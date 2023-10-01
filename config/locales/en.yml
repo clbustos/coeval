@@ -388,8 +388,8 @@ en:
   Login: "User name"
   Login_already_used: "Login already used"
   login:
-    reset_link: "Resetear Password"
-    forgotten_password: "Ingresa tu e-mail y envía para recibir un mensaje en tu buzón"
+    reset_link: "Reset Password"
+    forgotten_password: "Please enter your email address to receive a password reset link"
     software_description: "Self & Peer Evaluation Tool"
     instruction: "Enter user name and password"
     submit: "Enter"
