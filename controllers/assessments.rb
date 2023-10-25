@@ -33,6 +33,7 @@ get '/assessment/:id/edit' do |id|
   halt 403 unless auth_to('assessment_view')
   @user=User[session["user_id"]]
   @assessment=Assessment[id]
+  @criteria_hash=@assessment.criteria_hash
   haml "assessments/edit".to_sym, escape_html: false
 end
 
@@ -87,19 +88,33 @@ post '/assessment/:id/edit' do |id|
   raise Coeval::NoAssessmentIdError, id unless @assessment
 
   if params["name"].length>0
-    $log.info(params)
+    #$log.info(params)
     @assessment.update(name:params["name"].strip,
                        description:params["description"],
                        active:!params["active"].nil?,
+                       grade_system: params['grade_system'].strip,
+                       grade_parameter_1: params['grade_parameter_1']=="" ? nil : params['grade_parameter_1'],
+                       grade_parameter_2: params['grade_parameter_2']=="" ? nil : params['grade_parameter_2'],
                        start_time_evaluation:!params['start_time_evaluation_nil'].nil? ? nil: params['start_time_evaluation'],
                        end_time_evaluation:!params['end_time_evaluation_nil'].nil? ? nil :  params['end_time_evaluation'],
                       start_time_feedback:!params['start_time_feedback_nil'].nil? ? nil : params['start_time_feedback'],
                         end_time_feedback:!params['end_time_feedback_nil'].nil? ? nil : params['end_time_feedback']
                        )
 
+
   end
 
+  params["criterion"].each_pair do |criterion_id, criterion_order|
+    if criterion_order.strip.length>0
+      ac=AssessmentCriterion.find_or_create(assessment_id:id, criterion_id:criterion_id)
+      ac.update(criterion_order:criterion_order)
+    else
+      AssessmentCriterion[assessment_id:id, criterion_id:criterion_id].delete
+    end
 
+  end
+
+  @criteria_hash=@assessment.criteria_hash
 
   haml "assessments/edit".to_sym, escape_html: false
 end

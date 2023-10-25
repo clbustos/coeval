@@ -34,6 +34,7 @@ module Coeval
       @parameter_2=assesment[:grade_parameter_2]
     end
     def output(value)
+      return "--" if value.nil?
       "#{self.grade(value)} (#{(value*100).round(0)}%)"
     end
     # In Chile, exams are typically graded using a system known as the "Chilean grading scale"
@@ -46,7 +47,7 @@ module Coeval
     # @param value a value from 0 to 1
     # @return a grade, between 1 and 7
     def grade_chilean(value)
-
+      return "-not parameter 1-" unless @parameter_1
       nmin=1.0
       nmax=7.0
       napr=4.0

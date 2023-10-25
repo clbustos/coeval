@@ -1000,6 +1000,9 @@ en:
       zero: "All records are valid for user"
     user_count_records_not_ready: "Number of valid records for user"
   users_admin:
+    batch_edit: "Batch edit"
+    excel_export: "Excel Export"
+    excel_import: "Excel Import"
     action_inactive: "Users made inactive: %{ids}"
     action_active:   "Users made active: %{ids}"
     action_delete:   "Users deleted: %{ids}"

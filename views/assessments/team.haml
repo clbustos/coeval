@@ -80,10 +80,10 @@
             - rp.each_criterion_id do |crit_id|
               %td
                 - value=member_data[crit_id]
-                ="#{@gs.grade(value)} (#{(value*100).round}%)"
+                = @gs.output(value)
             %td
               - value=rp.student_total[student_id]
-              ="#{@gs.grade(value)} (#{(value*100).round}%)"
+              = @gs.output(value)
 
 
 

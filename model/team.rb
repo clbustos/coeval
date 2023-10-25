@@ -13,7 +13,17 @@ class Team < Sequel::Model
       k=@criteria.count
       @pivot.inject({}) do |ac,v|
         student_id=v[0]
-        res=v[1].inject(0) {|ac2,v2| ac2+v2[1]}/k
+
+        res=v[1].inject(0) {|ac2,v2|
+          if v2[1].nil?
+            0
+          else
+            ac2+v2[1]
+
+          end
+
+
+        }/k
         ac[student_id]=res
         ac
       end

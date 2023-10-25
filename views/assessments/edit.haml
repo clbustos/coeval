@@ -20,10 +20,25 @@
       %span{:class=>"titulo"}=t(:Description)
       %input{type:'textbox', name:'description', value: @assessment[:description], style:'width:80%'}
     %div{:class=>"list-group-item"}
+      %span{:class=>"titulo"}=t(:Grade_system)
+      %input{type:'textbox', name:'grade_system', value: @assessment[:grade_system], style:'width:80%'}
+    %div{:class=>"list-group-item"}
+      %span{:class=>"titulo"}=t(:Grade_parameter_1)
+      %input{type:'textbox', name:'grade_parameter_1', value: @assessment[:grade_parameter_1], style:'width:80%'}
+    %div{:class=>"list-group-item"}
+      %span{:class=>"titulo"}=t(:Grade_parameter_2)
+      %input{type:'textbox', name:'grade_parameter_2', value: @assessment[:grade_parameter_2], style:'width:80%'}
+
+    %div{:class=>"list-group-item"}
       %span{:class=>"titulo"}=t(:Active)
       %input{type:'checkbox', name:'active', checked:@assessment[:active]}
     - [:start_time_evaluation, :end_time_evaluation, :start_time_feedback, :end_time_feedback].each do |field|
       %div{:class=>"list-group-item"}
         =partial(:datetime_input, :locals=>{field: field, assessment:@assessment})
-
+  %div.list-group
+    %div.list-group-item-heading=t(:Criteria)
+    - Criterion.each do |criterion|
+      %div{:class=>"list-group-item"}
+        %input{type:'textbox', name:"criterion[#{criterion[:id]}]", value: @criteria_hash[criterion[:id]], width:2}
+        %span=criterion[:name]
   %input.btn.btn-default{type:"submit", name:"save", value:t(:Save)}

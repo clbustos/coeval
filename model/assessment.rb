@@ -7,6 +7,11 @@ class Assessment < Sequel::Model
   def course_name
     course[:name]
   end
+
+  def criteria_hash
+    @criteria_hash||=      AssessmentCriterion.where(assessment_id:self[:id]).to_hash(:criterion_id, :criterion_order)
+
+  end
   def teacher
     User[course[:teacher_id]]
   end
@@ -24,7 +29,7 @@ class Assessment < Sequel::Model
     now=Time.now
     correct_start=self[:start_time_feedback].nil? || self[:start_time_feedback]<=now
     correct_end=self[:end_time_feedback].nil? || self[:end_time_feedback]>=now
-   
+
     correct_start and correct_end
   end
 

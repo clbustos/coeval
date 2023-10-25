@@ -951,6 +951,9 @@ es:
   Use_Statistics: "Estadísticas de uso"
   user_should_be_included_in_one_group_at_least: "El usuario debería estar incluido al menos en un grupo"
   users_admin:
+    batch_edit: "Edición Masiva"
+    excel_export: "Exportación Excel"
+    excel_import: "Importación Excel"
     action_inactive: "Usuarios inactivados: %{ids}"
     action_active:   "Usuarios activados: %{ids}"
     action_delete:   "Usuarios eliminados: %{ids}"

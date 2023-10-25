@@ -90,7 +90,7 @@ module Coeval
             if c_data[:criterion_type]=="ordered_levels"
               dd=dd.to_i
             end
-            asr1.update(value:dd)
+            asr1.update(response_value: dd)
           end
         end
       end
