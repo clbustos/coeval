@@ -13,12 +13,72 @@ class Assessment < Sequel::Model
   def teams
     Team.where(:assessment_id=>self[:id])
   end
+  def moment_to_evaluate?
+    now=Time.now
+    correct_start=self[:start_time_evaluation].nil? || self[:start_time_evaluation]<=now
+    correct_end=self[:end_time_evaluation].nil? || self[:end_time_evaluation]>=now
+
+    correct_start and correct_end
+  end
+  def feedback_moment?
+    now=Time.now
+    correct_start=self[:start_time_feedback].nil? || self[:start_time_feedback]<=now
+    correct_end=self[:end_time_feedback].nil? || self[:end_time_feedback]>=now
+   
+    correct_start and correct_end
+  end
+
+
+
+
+  def open_ended_responses(extra_criteria= { })
+
+    where_cond={criterion_type:'open_ended', assessment_id:self[:id]}.merge(extra_criteria)
+
+    $db[:assessments_results_raw].where(where_cond)
+  end
+
+  def response_detail_student
+    $db["SELECT MAX(team_id) as team_id, student_id, SUM(n_responses) AS n_responses_total,
+AVG(perc_complete) as avg_perc_complete,
+AVG(response_avg_partial) AS response_avg_partial_total,
+AVG(response_avg) AS response_avg_total
+
+ FROM (SELECT student_to as student_id, team_id, criterion_id, COUNT(DISTINCT(student_from)) as n_students,
+COUNT(DISTINCT(ass_id)) as n_responses,
+AVG(CASE WHEN saved = 1 THEN 1 ELSE 0 END)*100 AS perc_complete,
+AVG(response_value-min_points)/(max_points-min_points) AS response_avg_partial,
+AVG(CASE
+        WHEN response_value IS NULL THEN 0
+        ELSE (response_value-min_points)/(max_points-min_points)
+    END) AS response_avg
+
+FROM assessments_results_raw
+WHERE assessment_id=? AND criterion_type!='open_ended' GROUP BY team_id, student_to, criterion_id
+ORDER BY student_to, criterion_id) AS t GROUP BY student_id ", self[:id]]
+  end
+
+
   # For each team, retrieve the completion rate of their members
   def teams_completation_rate
-    $db["SELECT st.team_id, t.name as team_name, COUNT(DISTINCT(student_id)) as n_students,
-SUM(CASE WHEN complete IS NULL THEN 0 ELSE 1 END) as n_responses FROM teams t INNER JOIN student_teams st on t.id=st.team_id
-LEFT JOIN student_assessments sa ON sa.student_from=st.student_id and sa.team_id=t.id
-WHERE assessment_id=? GROUP BY team_id", self[:id]].to_hash(:team_id)
+    $db["SELECT team_id, t_name as team_name, COUNT(DISTINCT(student_from)) as n_students,
+COUNT(DISTINCT(ass_id)) as n_responses,
+AVG(CASE WHEN saved = 1 THEN 1 ELSE 0 END)*100 AS perc_complete,
+AVG(CASE
+        WHEN criterion_type = 'open_ended' THEN NULL
+        ELSE (response_value-min_points)/(max_points-min_points)
+    END) AS response_avg_partial,
+AVG(CASE
+        WHEN criterion_type = 'open_ended' THEN NULL
+        WHEN response_value IS NULL THEN 0
+        ELSE (response_value-min_points)/(max_points-min_points)
+    END) AS response_avg
+
+FROM assessments_results_raw
+WHERE assessment_id=? GROUP BY team_id order by t_name", self[:id]].to_hash(:team_id)
+
+
+
   end
   # Retrieves the list of other students of a team
   # of a given student
@@ -31,6 +91,12 @@ WHERE student_id IN (?,?) and assessment_id=?', student_from[:id],
     res[:t_n]==1 and ((student_from[:id]==student_to[:id] and res[:st_n]==1 ) or
       (student_from[:id]!=student_to[:id] and res[:st_n]==2))
   end
+
+  def complete_report
+
+  end
+
+
   # Retrieves the complete structure of criteria
   # and levels
   # To maintain order, I will retrieve as an array

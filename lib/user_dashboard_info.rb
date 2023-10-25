@@ -34,13 +34,38 @@ class UserDashboardInfo
     #@sr_active=user.systematic_reviews.where(:active=>true)
   end
   def is_administrator_assessment?(assessment)
+    raise Coeval::NoAssessmentIdError, nil unless assessment
     assessment.teacher[:id]==self.user[:id]
+  end
+  def is_evaluation_complete?(assessment)
+    res=$db["SELECT SUM(saved) as guardados, COUNT(*) as n FROM assessments_results_raw WHERE assessment_id=? AND student_to=?",
+        assessment[:id], @user[:id]].first
+    res[:guardados]==res[:n]
+  end
+
+
+  def quantitative_assessment(assessment, type)
+    raise Coeval::NoAssessmentIdError, nil unless assessment
+
+    team_id=Team.team_id_of_student_assessment( self.user[:id],assessment[:id])
+    team_o=Team[team_id]
+    return nil unless team_o
+    rp=team_o.response_pivot(type)
+
+    rp.pivot[self.user[:id]].merge(total: rp.calculate_student_total[self.user[:id]])
+  end
+  def qualitative_assessment(assessment)
+    raise Coeval::NoAssessmentIdError, nil unless assessment
+
+    assessment.open_ended_responses({student_to:@user[:id]})
   end
 
   def is_member?(assessment)
     raise Exception("TODO")
   end
   def get_users_to_assess(assessment)
+    raise Coeval::NoAssessmentIdError, nil unless assessment
+
     team_id=Team.team_id_of_student_assessment( self.user[:id],assessment[:id])
     students_team=StudentTeam.where(team_id:team_id).map {|v| v[:student_id]}
     students_to=User.where(:id=>students_team).to_hash(:id, :name)

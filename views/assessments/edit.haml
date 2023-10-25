@@ -1,0 +1,29 @@
+.heading=t_assessment_title(@assessment[:name],:Edit)
+%ul.breadcrumb
+  %li
+    %a{:href=>url("/courses")}=t(:Courses)
+  %li
+    %a{:href=>url("/course/#{@assessment[:course_id]}")}=@assessment.course_name
+  %li
+    %a{:href=>url("/assessment/#{@assessment[:id]}")}=@assessment.name
+  %li.active=t(:Edit)
+%form{method:'post', action:url("/assessment/#{@assessment[:id]}/edit")}
+
+  %div.list-group
+    %div{:class=>"list-group-item"}
+      %span{:class=>"titulo"}=t(:Id)
+      %span{ :name=>"name"}=@assessment[:id]
+    %div{:class=>"list-group-item"}
+      %span{:class=>"titulo"}=t(:Name)
+      %input{type:'textbox', name:'name', value: @assessment[:name], style:'width:50%'}
+    %div{:class=>"list-group-item"}
+      %span{:class=>"titulo"}=t(:Description)
+      %input{type:'textbox', name:'description', value: @assessment[:description], style:'width:80%'}
+    %div{:class=>"list-group-item"}
+      %span{:class=>"titulo"}=t(:Active)
+      %input{type:'checkbox', name:'active', checked:@assessment[:active]}
+    - [:start_time_evaluation, :end_time_evaluation, :start_time_feedback, :end_time_feedback].each do |field|
+      %div{:class=>"list-group-item"}
+        =partial(:datetime_input, :locals=>{field: field, assessment:@assessment})
+
+  %input.btn.btn-default{type:"submit", name:"save", value:t(:Save)}

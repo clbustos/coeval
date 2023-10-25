@@ -19,6 +19,30 @@
   %div{:class=>"list-group-item"}
     %span{:class=>"titulo"}=t(:Active)
     =t_yes_no_nil(@assessment[:active])
+  - [:start_time_evaluation, :end_time_evaluation, :start_time_feedback, :end_time_feedback].each do |field|
+    %div{:class=>"list-group-item"}
+      %span{:class=>"titulo"}=t(field)
+      =@assessment[field].nil? ? "--" : @assessment[field]
+  %div{:class=>"list-group-item"}
+    %span{:class=>"titulo"}=t(:Grade_system)
+    =@assessment[:grade_system]
+  %div{:class=>"list-group-item"}
+    %span{:class=>"titulo"}=t(:Grade_parameter_1)
+    =@assessment[:grade_parameter_1]
+  %div{:class=>"list-group-item"}
+    %span{:class=>"titulo"}=t(:Grade_parameter_2)
+    =@assessment[:grade_parameter_2]
+
+- if auth_to('assessment_admin')
+  .btn-group{role:'group'}
+    %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/edit")}
+      =t(:Edit)
+    %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/check_open_ended_responses")}
+      =t(:Check_open_ended_responses)
+    %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/export_excel")}
+      =t(:Export_to_Excel)
+
+%p
 - if auth_to('assessment_view')
   %div{:class=>"list-group-item"}
     %h4{:class=>"list-group-item-heading"}=t(:Teams)
@@ -29,6 +53,8 @@
           %th=t(:Members)
           %th=t(:Responses)
           %th=t(:Completion)
+          %th=t(:Average_response_partial)
+          %th=t(:Average_response)
         %tbody
         - @assessment.teams_completation_rate.each_pair do |team_id,team_data|
           %tr
@@ -36,7 +62,11 @@
               %a{:href=>url("/team/#{team_id}")}=team_data[:team_name]
             %td=team_data[:n_students]
             %td=team_data[:n_responses]
-            %td=percent_from_proportion( team_data[:n_responses].to_f / team_data[:n_students]**2.to_f)
+            %td=team_data[:perc_complete].to_i
+            %td
+              =@gs.output(team_data[:response_avg_partial])
+            %td
+              =@gs.output(team_data[:response_avg])
 
     - else
       %p

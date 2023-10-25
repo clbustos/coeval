@@ -15,8 +15,18 @@
           .btn-group.btn-group-sm
             - if is_administrator
               %a.btn.btn-default{:href=>"/assessment/#{assessment.id}"}=t(:View_assessment)
+
       .row
         .col-md-10
-          =partial(:students_to_evaluate, :locals=>{user:user, assessment:assessment})
+          - if assessment.moment_to_evaluate?
+            =partial(:students_to_evaluate, :locals=>{user:user, assessment:assessment})
+          - else
+            =t(:No_time_to_evaluate)
+      .row
+        .col-md-10
+          - if assessment.feedback_moment?
+            =partial(:feedback, :locals=>{user:user, assessment:assessment})
+          - else
+            =t(:No_time_for_feedback)
   .panel-footer
     =partial(:assessment_buttons, :locals=>{:assessment=>assessment})

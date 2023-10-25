@@ -23,4 +23,28 @@ get '/course/:id' do |id|
   haml "courses/view".to_sym, escape_html: false
 end
 
+
+get '/course/:id/edit' do |id|
+  halt 403 unless auth_to('course_admin')
+
+  @course=Course[id]
+  haml "courses/edit".to_sym, escape_html: false
+end
+
+post '/course/:id/edit' do |id|
+  halt 403 unless auth_to('course_admin')
+
+  @course=Course[id]
+
+  raise Coeval::NoCourseIdError, id unless @course
+  if params['name'].length>0
+    @course.update(name:params["name"].strip,
+                   description:params["description"],
+                   active:!params["active"].nil?)
+  end
+  haml "courses/edit".to_sym, escape_html: false
+
+
+end
+
 # @!endgroup

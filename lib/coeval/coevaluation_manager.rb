@@ -31,7 +31,7 @@ module Coeval
   # Verifies that the assessment could be performed, updates the assessment in database once performed,
   # and validates if the assessment is complete
 
-  class CoevaluationManager
+  class  CoevaluationManager
     attr_reader :result
     attr_reader :student_assessment
     attr_reader :structure
@@ -74,7 +74,8 @@ module Coeval
         |v|v[:criterion_id]}).to_hash(:id)
       #$log.info(@criteria_h)
 
-      @student_criteria = AssessmentResponse.where(student_assessment_id: @student_assessment[:id]).to_hash(:criterion_id, :value)
+      @student_criteria = AssessmentResponse.where(student_assessment_id: @student_assessment[:id]).to_hash(:criterion_id,
+                                                                                                            :response_value)
       #$log.info(@student_criteria)
       return true
     end

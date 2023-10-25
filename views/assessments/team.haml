@@ -10,7 +10,7 @@
 
   %li.active=@team[:name]
 
-%h3=t(:Members)
+%h3=t(:Completation_rate)
 
 %table.table
   %thead
@@ -25,3 +25,65 @@
       %td=member_data[:student_name]
       %td=member_data[:n_responses]
       %td=percent_from_proportion( member_data[:n_responses].to_f / n_members.to_f)
+%h3=t(:Responses_received)
+
+%h4=t(:Average_response)
+
+%div
+  %ul.nav.nav-tabs{role:'tablist'}
+    %li.active{role:"presentation"}
+      %a{:href=>'#average_response', "aria-controls"=>"average_response", :role=>"tab", "data-toggle"=>"tab"}=t(:Average_response)
+    %li{role:"presentation"}
+      %a{:href=>'#average_response_partial', "aria-controls"=>"average_response_partial",:role=>"tab", "data-toggle"=>"tab"}=t(:Average_response_partial)
+
+
+
+  %div.tab-content
+    - rp=@team.response_pivot
+    %div.tab-pane.active#average_response{role:'tabpanel'}
+      %table.table
+        %thead
+          %th=t(:Student)
+          -rp.criteria.each do |crit|
+            %th=crit[:criterion_name]
+          %th=t(:Total)
+        %tbody
+        - rp.pivot.each_pair do |student_id,member_data|
+          %tr
+            %td
+              %a{:href=>url("/team/#{@team.id}/student/#{student_id}")}=@user_names[student_id]
+            - rp.each_criterion_id do |crit_id|
+              %td
+                - value=member_data[crit_id]
+                =@gs.output(value)
+            %td
+              - value=rp.student_total[student_id]
+              =@gs.output(value)
+
+
+
+    - rp=@team.response_pivot(:response_avg_partial)
+    %div.tab-pane#average_response_partial{role:'tabpanel'}
+
+
+      %table.table
+        %thead
+          %th=t(:Student)
+          -rp.criteria.each do |crit|
+            %th=crit[:criterion_name]
+          %th=t(:Total)
+        %tbody
+        - rp.pivot.each_pair do |student_id,member_data|
+          %tr
+            %td
+              %a{:href=>url("/team/#{@team.id}/student/#{student_id}")}=@user_names[student_id]
+            - rp.each_criterion_id do |crit_id|
+              %td
+                - value=member_data[crit_id]
+                ="#{@gs.grade(value)} (#{(value*100).round}%)"
+            %td
+              - value=rp.student_total[student_id]
+              ="#{@gs.grade(value)} (#{(value*100).round}%)"
+
+
+

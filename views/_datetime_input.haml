@@ -1,0 +1,12 @@
+- # assessment
+- # field
+- if @datetime_js.nil?
+  - @datetime_js=true
+  %script{:type=>'text/javascript', :src=>url('/js/datetime_input.js')}
+%span{:class=>"titulo"}="#{t(field)}:"
+- datetime_loc=assessment[field].nil? ? DateTime.now : assessment[field]
+- class_date=assessment[field].nil? ? "collapse":""
+%span{:class=>"titulo"}=t(:Set_no_datetime)
+%input{type:'checkbox', class:'checkbox_to_datetime', name:"#{field}_nil",id:"#{field}_nil",  checked:assessment[field].nil?}
+
+%input{type:'datetime-local', class:class_date, name:field.to_s, id:field.to_s, value: datetime_loc.strftime("%Y-%m-%dT%H:%M:%S")}

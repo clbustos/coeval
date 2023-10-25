@@ -1,0 +1,25 @@
+.heading=t_assessment_title(@assessment[:name],:Check_open_ended_responses)
+%ul.breadcrumb
+  %li
+    %a{:href=>url("/courses")}=t(:Courses)
+  %li
+    %a{:href=>url("/course/#{@assessment[:course_id]}")}=@assessment.course_name
+  %li
+    %a{:href=>url("/assessment/#{@assessment[:id]}")}=@assessment.name
+  %li.active=t(:Check_open_ended_responses)
+
+%h2=t(:Check_open_ended_responses)
+
+%form{method: "post", action: url("/assessment/#{@assessment[:id]}/check_open_ended_responses")}
+  %input{type: "hidden", name: 'assessment_id', value: @assessment[:id]}
+
+  %div.list-group
+    - @open_ended.each do |oe|
+      -if oe[:response_value] and oe[:response_value].length>1
+        %div.list-group-item
+          %input{:type=>'hidden', name:"response_total[#{oe[:criterion_id]}][]", value:oe[:ass_id]}
+          %input{:type=>"checkbox", name: "response[#{oe[:criterion_id]}][#{oe[:ass_id]}]", checked:oe[:omitted]}
+          =oe[:response_value]
+          ="(Equipo:#{oe[:team_id]}, #{oe[:student_from]}, #{oe[:student_to]})"
+
+  %input.btn.btn-default{type:"submit", name:"save", value:t(:Save)}

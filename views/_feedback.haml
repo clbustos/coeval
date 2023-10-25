@@ -1,0 +1,31 @@
+- # Requires user and assessment
+- udi||=UserDashboardInfo.new(user)
+- quantitative_feedback_1=udi.quantitative_assessment(assessment, :response_avg)
+- quantitative_feedback_2=udi.quantitative_assessment(assessment, :response_avg_partial)
+- completo=udi.is_evaluation_complete?(assessment)
+- qualitative_feedback=udi.qualitative_assessment(assessment)
+- gs=Coeval::GradingSystem.new(assessment)
+- if quantitative_feedback_1
+  %h3=t(:Quantitative_feedback)
+
+  %div.list-group
+  - quantitative_feedback_1.each do |criterion, value|
+    %div.list-group-item
+      %span.titulo=criterion
+      %span
+        =gs.output(value)
+  - if !completo
+    %p
+      %strong=t(:Grade_is_evaluation_were_complete)
+    - quantitative_feedback_2.each do |criterion, value|
+      %div.list-group-item
+        %span.titulo=criterion
+        %span
+          =gs.output(value)
+- if qualitative_feedback
+  %h3=t(:Qualitative_feedback)
+  %div.list-group
+  - qualitative_feedback.each do |response|
+    -if !response[:omitted] and response[:response_value] and response[:response_value].length>1
+      %div.list-group-item
+        =response[:response_value]

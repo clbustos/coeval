@@ -1,0 +1,17 @@
+.header
+  %h2=t_team_title(@team.name, :Student_in_team)
+%ul.breadcrumb
+  %li
+    %a{:href=>url("/courses")}=t(:Courses)
+  %li
+    %a{:href=>url("/course/#{@team.assessment[:course_id]}")}=@team.assessment.course_name
+  %li
+    %a{:href=>url("/assessment/#{@team.assessment_id}")}=@team.assessment_name
+  %li
+    %a{:href=>url("/team/#{@team.id}")}=@team[:name]
+  %li.active=@student[:name]
+
+%h3=@student[:name]
+
+
+=partial(:feedback, :locals=>{user:@student, assessment:@assessment})
