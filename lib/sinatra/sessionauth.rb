@@ -84,7 +84,7 @@ module Sinatra
         assessment=Assessment[assessment_id]
         auth_to("assessment_admin") and Course[:id=>assessment[:course_id], :teacher_id=>user_id]
       end
-      def authorize(user, password)
+      def authorize(login, password)
         #$log.info(email)
         #$log.info(Digest::SHA1.hexdigest(password))
         u=User.filter(Sequel.lit("(login=? OR email=?) AND password=?", login,login, Digest::SHA1.hexdigest(password)))
