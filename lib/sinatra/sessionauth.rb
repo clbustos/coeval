@@ -87,7 +87,7 @@ module Sinatra
       def authorize(user, password)
         #$log.info(email)
         #$log.info(Digest::SHA1.hexdigest(password))
-        u=User.filter(:login=>user,:password=>Digest::SHA1.hexdigest(password))
+        u=User.filter(Sequel.lit("(login=? OR email=?) AND password=?", login,login, Digest::SHA1.hexdigest(password)))
 
         if u.first
           user=u.first
@@ -152,12 +152,13 @@ module Sinatra
         @t=params['t']
         if @t
           @user=User[token_password:@t]
-          $log.info(@user)
+          #$log.info(@user)
 
           if @user and (Time.now - @user.token_datetime)<60*30
             haml :reset_link, :layout=>:layout_empty, :escape_html=>false
           else
-            redirect url("/login")  
+            add_message(::I18n::t("password.no_user_or_past_datetime"), :error)
+            redirect url("/login")
           end
         else
           redirect url("/login")
