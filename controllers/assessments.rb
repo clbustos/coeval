@@ -18,7 +18,31 @@ get '/assessments' do
   haml :assessments, escape_html: false
 end
 
+get '/assessment/:id/delete' do |id|
+  halt 403 unless auth_to('assessment_admin')
+  @user=User[session["user_id"]]
+  @assessment=Assessment[id]
+  raise Coeval::NoAssessmentIdError, id unless @assessment
 
+
+  haml "assessments/prepare_delete".to_sym, escape_html: false
+end
+
+post '/assessment/:id/delete' do |id|
+  halt 403 unless auth_to('assessment_admin')
+  @user=User[session["user_id"]]
+  assessment_id=params['assessment_id']
+  @assessment=Assessment[assessment_id]
+  raise Coeval::NoAssessmentIdError, assessment_id unless @assessment
+
+  course_id=@assessment[:course_id]
+  $db.transaction(rollback: :reraise) do
+    @assessment.delete_complete
+  end
+  add_message(::I18n::t(:Assessment_deleted))
+
+  redirect url("/course/#{course_id}")
+end
 
 
 get '/assessment/:id' do |id|
@@ -77,6 +101,73 @@ get '/assessment/:id/export_excel' do |id|
   content_type 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     @package.to_stream
 
+
+end
+
+
+get '/assessment/:id/duplicate' do |id|
+  halt 403 unless auth_to('assessment_admin')
+  @user=User[session["user_id"]]
+  @assessment=Assessment[id]
+  raise Coeval::NoAssessmentIdError, id unless @assessment
+
+  @criteria_hash=@assessment.criteria_hash
+
+  haml "assessments/prepare_duplicate".to_sym, escape_html: false
+end
+
+post '/assessment/:id/duplicate' do |id|
+  halt 403 unless auth_to('assessment_admin')
+  @user=User[session["user_id"]]
+  original_assessment_id=params['origin_id']
+  @assessment=Assessment[original_assessment_id]
+  raise Coeval::NoAssessmentIdError, original_assessment_id unless @assessment
+
+  @criteria_hash=@assessment.criteria_hash
+  # Primero, genero el archivo de copia
+  new_assessment_id=nil
+  $db.transaction(:rollback=>:reraise) do
+
+    @new_assessment=Assessment.create(
+      name:params["name"].strip,
+      course_id:@assessment[:course_id],
+      description:params["description"],
+      active:!params["active"].nil?,
+      grade_system: params['grade_system'].strip,
+      grade_parameter_1: params['grade_parameter_1']=="" ? nil : params['grade_parameter_1'],
+      grade_parameter_2: params['grade_parameter_2']=="" ? nil : params['grade_parameter_2'],
+      start_time_evaluation:!params['start_time_evaluation_nil'].nil? ? nil: params['start_time_evaluation'],
+      end_time_evaluation:!params['end_time_evaluation_nil'].nil? ? nil :  params['end_time_evaluation'],
+      start_time_feedback:!params['start_time_feedback_nil'].nil? ? nil : params['start_time_feedback'],
+      end_time_feedback:!params['end_time_feedback_nil'].nil? ? nil : params['end_time_feedback']
+    )
+    new_assessment_id=@new_assessment[:id]
+    params['criterion'].each_pair do |index, order|
+      if order.strip!=""
+        AssessmentCriterion.create(assessment_id: new_assessment_id,
+                                   criterion_id: index,
+                                   criterion_order:order)
+      end
+    end
+
+    @assessment.teams.each do |team|
+      team_id=team[:id]
+      if !params['team_active'].nil? and params['team_active'][team_id.to_s]
+        new_team=Team.create(name: params['team_name'][team_id.to_s], assessment_id:new_assessment_id)
+
+        $db.run("INSERT INTO student_teams (student_id, team_id) SELECT student_id, #{new_team[:id]} FROM
+student_teams WHERE team_id=#{team_id}")
+      end
+    end
+  end
+  if new_assessment_id
+    add_message(::I18n::t(:Correct_assessment_duplicate))
+
+    redirect url("/assessment/#{new_assessment_id}")
+  else
+    add_message(::I18n::t(:Incorrect_assessment_duplicate))
+    redirect url("/assessment/#{original_assessment_id}")
+  end
 
 end
 

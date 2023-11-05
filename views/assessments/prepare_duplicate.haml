@@ -1,0 +1,55 @@
+.heading=t_assessment_title(@assessment[:name],:Edit)
+%ul.breadcrumb
+  %li
+    %a{:href=>url("/courses")}=t(:Courses)
+  %li
+    %a{:href=>url("/course/#{@assessment[:course_id]}")}=@assessment.course_name
+  %li
+    %a{:href=>url("/assessment/#{@assessment[:id]}")}=@assessment.name
+  %li.active=t(:Duplicate)
+
+%form.form-horizontal{method:'post', action:url("/assessment/#{@assessment[:id]}/duplicate")}
+  %input{type: "hidden", name: "origin_id", value: @assessment[:id]}
+  %div.panel.panel-default
+    %div.panel-heading
+      %h4=t(:General)
+    %div.panel-body
+      .form-group
+        %label.control-label.col-sm-2=t(:Name)
+        %input.col-sm-10{type:'textbox', name:'name', value: "#{@assessment[:name]} - #{t(:Copy)}", style:'width:50%'}
+      %div{:class=>"form-group"}
+        %label.control-label.col-sm-2=t(:Description)
+        %input.col-sm-10{type:'textbox', name:'description', value: "#{@assessment[:description]} - #{t(:Copy)}", style:'width:80%'}
+      %div{:class=>"form-group"}
+        %label.control-label.col-sm-2=t(:Grade_system)
+        %input.col-sm-10{type:'textbox', name:'grade_system', value: @assessment[:grade_system], style:'width:80%'}
+      %div{:class=>"form-group"}
+        %label.control-label.col-sm-2=t(:Grade_parameter_1)
+        %input.col-sm-10{type:'textbox', name:'grade_parameter_1', value: @assessment[:grade_parameter_1], style:'width:80%'}
+      %div{:class=>"form-group"}
+        %label.control-label.col-sm-2=t(:Grade_parameter_2)
+        %input.col-sm-10{type:'textbox', name:'grade_parameter_2', value: @assessment[:grade_parameter_2], style:'width:80%'}
+      %div{:class=>"form-group"}
+        %label.control-label.col-sm-2=t(:Active)
+        %input.col-sm-2{type:'checkbox', name:'active', checked:true}
+      - [:start_time_evaluation, :end_time_evaluation, :start_time_feedback, :end_time_feedback].each do |field|
+        %div{:class=>"form-group"}
+          =partial(:datetime_input, :locals=>{field: field, assessment:@assessment})
+
+
+    %div.panel-heading=t(:Criteria)
+    %div.panel-body
+      - Criterion.each do |criterion|
+        .form-group
+          %label.control-label.col-sm-2{for:"criterion_#{criterion[:id]}"}=criterion[:name]
+          %input.col-sm-2{type:'textbox', id:"criterion_#{criterion[:id]}",  name:"criterion[#{criterion[:id]}]", value: @criteria_hash[criterion[:id]]}
+
+    %div.panel-heading=t(:Teams)
+    %div.panel-body
+      - @assessment.teams.each do |team|
+        %div.form-group
+          %input.col-sm-2{type:'checkbox', name:"team_active[#{team[:id]}]", checked:true}
+          %input.col-sm-4{type:'textbox', name:"team_name[#{team[:id]}]", value: team[:name], width:30}
+    .form-group
+      .col-sm-10
+        %input.btn.btn-default{type:"submit", name:"save", value:t(:Save)}

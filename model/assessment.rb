@@ -8,6 +8,25 @@ class Assessment < Sequel::Model
     course[:name]
   end
 
+  def delete_complete
+    # First, get teams and students
+    teams_id=teams.map {|team| team[:id]}
+    students_id=StudentTeam.where(team_id: teams_id).map {|st| st[:student_id]}
+    sta=StudentAssessment.where(team_id: teams_id)
+    AssessmentResponse.where(student_assessment_id:sta.map {|stai|stai[:student_assessment_id]}).delete
+    AssessmentCriterion.where(assessment_id:self[:id]).delete
+    sta.delete
+    StudentAssessment.where(team_id: teams_id).delete
+    StudentTeam.where(team_id: teams_id).delete
+    Team.where(id:teams_id).delete
+    self.delete
+    return true
+
+
+  end
+  def student_assessments
+    StudentAssessment.where(team_id: teams.map {|team| team[:id]})
+  end
   def criteria_hash
     @criteria_hash||=      AssessmentCriterion.where(assessment_id:self[:id]).to_hash(:criterion_id, :criterion_order)
 

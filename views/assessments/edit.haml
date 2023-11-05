@@ -7,38 +7,43 @@
   %li
     %a{:href=>url("/assessment/#{@assessment[:id]}")}=@assessment.name
   %li.active=t(:Edit)
-%form{method:'post', action:url("/assessment/#{@assessment[:id]}/edit")}
+%form.form-horizontal{method:'post', action:url("/assessment/#{@assessment[:id]}/edit")}
+  %div.panel.panel-default
+    %div.panel-heading
+      %h4=t(:General)
+    %div.panel-body
+      .form-group
+        %label.control-label.col-sm-2=t(:Id)
+        %span.col-sm-10{ :name=>"name"}=@assessment[:id]
+      .form-group
+        %label.control-label.col-sm-2=t(:Name)
+        %input.col-sm-10{type:'textbox', name:'name', value: @assessment[:name], style:'width:50%'}
+      .form-group
+        %label.control-label.col-sm-2=t(:Description)
+        %input.col-sm-10{type:'textbox', name:'description', value: @assessment[:description], style:'width:80%'}
+      .form-group
+        %label.control-label.col-sm-2=t(:Grade_system)
+        %input.col-sm-10{type:'textbox', name:'grade_system', value: @assessment[:grade_system], style:'width:80%'}
+      .form-group
+        %label.control-label.col-sm-2=t(:Grade_parameter_1)
+        %input.col-sm-10{type:'textbox', name:'grade_parameter_1', value: @assessment[:grade_parameter_1], style:'width:80%'}
+      .form-group
+        %label.control-label.col-sm-2=t(:Grade_parameter_2)
+        %input.col-sm-10{type:'textbox', name:'grade_parameter_2', value: @assessment[:grade_parameter_2], style:'width:80%'}
+      .form-group
+        %label.control-label.col-sm-2=t(:Active)
+        %input.col-sm-1{type:'checkbox', name:'active', checked:@assessment[:active]}
+      - [:start_time_evaluation, :end_time_evaluation, :start_time_feedback, :end_time_feedback].each do |field|
+        .form-group
+          =partial(:datetime_input, :locals=>{field: field, assessment:@assessment})
 
-  %div.list-group
-    %div{:class=>"list-group-item"}
-      %span{:class=>"titulo"}=t(:Id)
-      %span{ :name=>"name"}=@assessment[:id]
-    %div{:class=>"list-group-item"}
-      %span{:class=>"titulo"}=t(:Name)
-      %input{type:'textbox', name:'name', value: @assessment[:name], style:'width:50%'}
-    %div{:class=>"list-group-item"}
-      %span{:class=>"titulo"}=t(:Description)
-      %input{type:'textbox', name:'description', value: @assessment[:description], style:'width:80%'}
-    %div{:class=>"list-group-item"}
-      %span{:class=>"titulo"}=t(:Grade_system)
-      %input{type:'textbox', name:'grade_system', value: @assessment[:grade_system], style:'width:80%'}
-    %div{:class=>"list-group-item"}
-      %span{:class=>"titulo"}=t(:Grade_parameter_1)
-      %input{type:'textbox', name:'grade_parameter_1', value: @assessment[:grade_parameter_1], style:'width:80%'}
-    %div{:class=>"list-group-item"}
-      %span{:class=>"titulo"}=t(:Grade_parameter_2)
-      %input{type:'textbox', name:'grade_parameter_2', value: @assessment[:grade_parameter_2], style:'width:80%'}
-
-    %div{:class=>"list-group-item"}
-      %span{:class=>"titulo"}=t(:Active)
-      %input{type:'checkbox', name:'active', checked:@assessment[:active]}
-    - [:start_time_evaluation, :end_time_evaluation, :start_time_feedback, :end_time_feedback].each do |field|
-      %div{:class=>"list-group-item"}
-        =partial(:datetime_input, :locals=>{field: field, assessment:@assessment})
-  %div.list-group
-    %div.list-group-item-heading=t(:Criteria)
-    - Criterion.each do |criterion|
-      %div{:class=>"list-group-item"}
-        %input{type:'textbox', name:"criterion[#{criterion[:id]}]", value: @criteria_hash[criterion[:id]], width:2}
-        %span=criterion[:name]
-  %input.btn.btn-default{type:"submit", name:"save", value:t(:Save)}
+    .panel-heading
+      %h4=t(:Criteria)
+    .panel-body
+      - Criterion.each do |criterion|
+        .form-group
+          %input.col-sm-2{type:'textbox', name:"criterion[#{criterion[:id]}]", value: @criteria_hash[criterion[:id]], width:2}
+          %label.col-sm-4=criterion[:name]
+      .form-group
+        .col-sm-10
+          %input.btn.btn-default{type:"submit", name:"save", value:t(:Save)}

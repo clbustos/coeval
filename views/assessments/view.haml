@@ -41,6 +41,10 @@
       =t(:Check_open_ended_responses)
     %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/export_excel")}
       =t(:Export_to_Excel)
+    %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/duplicate")}
+      =t(:Duplicate)
+    %a.btn.btn-warning{:href=>url("/assessment/#{@assessment[:id]}/delete")}
+      =t(:Delete)
 
 %p
 - if auth_to('assessment_view')

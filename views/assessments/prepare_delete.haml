@@ -1,0 +1,29 @@
+.heading=t_assessment_title(@assessment[:name],:Delete)
+%ul.breadcrumb
+  %li
+    %a{:href=>url("/courses")}=t(:Courses)
+  %li
+    %a{:href=>url("/course/#{@assessment[:course_id]}")}=@assessment.course_name
+  %li
+    %a{:href=>url("/assessment/#{@assessment[:id]}")}=@assessment.name
+  %li.active=t(:Delete)
+
+%p=t(:Confirmation_delete)
+
+%form.form-horizontal{method:'post', action:url("/assessment/#{@assessment[:id]}/delete")}
+  %input{type:'hidden', name:'assessment_id', value:@assessment[:id]}
+  .list-group
+    .list-group-item
+      %span.titulo=t(:Teams)
+      =@assessment.teams.count
+    .list-group-item
+      %span.titulo=t(:Student_Assessments)
+      =@assessment.student_assessments.count
+    .list-group-item
+      %span.titulo=t(:Student_Assessments_saved)
+      =@assessment.student_assessments.where(saved:true).count
+    .list-group-item
+      %span.titulo=t(:Student_Assessments_sent)
+      =@assessment.student_assessments.where(sent:true).count
+
+  %input.btn.btn-warning{type:"submit", name:"delete", value:t(:Delete)}
