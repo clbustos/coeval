@@ -102,7 +102,7 @@ post '/admin/users_batch_edition/excel_import' do
       # Login and name should be the same. If not, ok
       if user_id.nil?
         # Create user, if login and e-mail doesn't exists
-        if User.where([email:email, login:login, name:name]).count==1
+        if User.where(Sequel.&(email:email, login:login, name:name)).count==1
           user_o=[email:email, login:login, name:name]
         end
         if User.where {Sequel.or(email:email, login:login, name:name)}.count>0
