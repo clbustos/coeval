@@ -103,7 +103,7 @@ post '/admin/users_batch_edition/excel_import' do
       if user_id.nil?
         # Create user, if login and e-mail doesn't exists
         if User.where(Sequel.&(email:email, login:login, name:name)).count==1
-          user_o=[email:email, login:login, name:name]
+          user_o=User[email:email, login:login, name:name]
         elsif User.where {Sequel.or(email:email, login:login, name:name)}.count>0
           result.error("User already exists:#{login}, #{name}, #{email}")
           break
