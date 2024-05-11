@@ -150,6 +150,8 @@ post '/admin/users_batch_edition/excel_import' do
       if course
         course_id=course_names[course] || Course.find_or_create(name:course, teacher_id:teacher_o[:id], active:1,
                                                                 institution_id:institution_id)[:id]
+        $log.info(course_id)
+        $log.info(user_o)
         StudentCourse.find_or_create(course_id:course_id, student_id:user_o[:id])
 
       end
