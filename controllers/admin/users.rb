@@ -69,12 +69,7 @@ post '/admin/users_batch_edition/excel_import' do
   team_names=Team.to_hash(:name, :id)
   course_names=Course.to_hash(:name, :id)
   assessment_names=Assessment.to_hash(:name, :id)
-  users_assignation={}
-  header.each_index { |i|
-    if header[i]=~/\[(\d+)\].+/
-      users_assignation[i]=$1
-    end
-  }
+  
   result=Result.new
   number_of_actions=0
   $db.transaction(:rollback => :reraise) do
@@ -89,6 +84,7 @@ post '/admin/users_batch_edition/excel_import' do
       course=row[id_course]
       team=row[id_team]
 
+      $log.info([user_id, active, email, login, name, assessment, teacher, course, team])
       next if login.nil? or name.nil?
 
       institution=row[id_institution].nil? ? "**NO INSTITUTION**": row[id_institution].strip
