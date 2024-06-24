@@ -31,11 +31,23 @@
     %span{:class=>"titulo"}=t(:Teacher)
     %span=@course.teacher_name
   - if auth_to("course_view")
+    - sg=@course.students_groups
     %div{:class=>"list-group-item"}
       %span{:class=>"titulo"}=t(:Students)
       %ul.list-group
         - @course.students.each do |student|
-          %li.list-group-item=student[:name]
+          %li.list-group-item
+            = student[:name]
+            - student_teams=sg[student[:id]]
+            - if student_teams
+              %ul
+                - student_teams.each do |st|
+                  %li
+                    ="<strong>#{t(:Assessment)}</strong>"
+                    %a{href:url("/assessment/#{st[:assessment_id]}")}=@assessments[st[:assessment_id]]
+                    ="<strong>#{t(:Team)}</strong>"
+                    %a{href:url("/team/#{st[:team_id]}")}=@teams[st[:team_id]]
+                    %a{href:url("/team/#{st[:team_id]}/student/#{student[:id]}")}="<strong>#{t(:Detail)}</strong>"
   %div{:class=>"list-group-item"}
     %h4{:class=>"list-group-item-heading"}=t(:Actions)
     %p=partial(:course_buttons, :locals=>{:course=>@course})

@@ -1,4 +1,5 @@
 es:
+  Assessment: "Evaluación"
   Assessment_deleted: "Evaluación eliminada"
   Student_Assessments: "Evaluaciones de los estudiantes"
   Student_Assessments_saved: "Evaluaciones de los estudiantes: Grabadas"
@@ -6,6 +7,7 @@ es:
   Confirmation_delete: "¿Realmente quiere eliminar esta evaluación?"
   General: "General"
   Copy: "Copia"
+  Detail: "Detalle"
   Duplicate: "Duplicar"
   No_time_to_evaluate: "La evaluación no está disponible durante este período de tiempo en particular."
   No_time_for_feedback: "El feedback no está disponible durante este período de tiempo en particular."

@@ -1,4 +1,5 @@
 en:
+  Assessment: "Assessment"
   Assessment_deleted: "Assessment deleted"
   Student_Assessments: "Student assessments"
   Student_Assessments_saved: "Student assessments: Saved"
@@ -6,6 +7,7 @@ en:
   Confirmation_delete: "Do you really want to delete this assessment?"
   General: "General"
   Copy: "Copy"
+  Detail: "Detail"
   Duplicate: "Duplicate"
   No_time_to_evaluate: "Evaluacion is not accessible during this particular time frame"
   No_time_for_feedback: "Feedback is not accessible during this particular time frame."

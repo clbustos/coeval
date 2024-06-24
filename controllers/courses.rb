@@ -20,7 +20,13 @@ get '/course/:id' do |id|
   halt 403 unless (auth_to('course_view') or auth_to('assessment_evaluate'))
 
   @course=Course[id]
+  @assessments=Assessment.where(course_id:id).as_hash(:id, :name)
+  @teams=Team.where(assessment_id: @assessments.keys).as_hash(:id, :name)
+  #$log.info(@assessments)
+  #$log.info(@teams)
+
   haml "courses/view".to_sym, escape_html: false
+
 end
 
 
