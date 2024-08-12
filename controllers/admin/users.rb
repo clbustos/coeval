@@ -73,7 +73,7 @@ post '/admin/users_batch_edition/excel_import' do
                "institution"=>id_institution, "language"=>id_language,
                "login"=>id_login, "name"=>id_name, "password"=>id_password,
                "role_id"=>id_role, "assessment"=>id_assessment}
-  
+
   missing_fields=lista_excel.find_all{|field,value| value.nil?}.map{|x| x[0]}
   if missing_fields.length >0
     result.error("Missing fields:#{missing_fields.join(', ')}")
