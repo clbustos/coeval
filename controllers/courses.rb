@@ -66,7 +66,7 @@ get '/course/:id/edit' do |id|
   @lead_teachers=User.lead_teachers
   @assistant_teachers=User.assistant_teachers
 
-  @current_assistant_teachers_id=@course.assistant_teachers.map(:id)
+  @current_assistant_teachers_id=@course.assistant_teachers.map(:id) || {}
   #$log.info(@current_assistant_teachers_id)
   haml "courses/edit".to_sym, escape_html: false
 end
