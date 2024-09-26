@@ -109,10 +109,10 @@ db.transaction do
     TrueClass :active, :default=>true, :null=>false
     String :name, :null=>false
     String :description, :text => true
-    DateTime start_time_evaluation , :null=>false
-    DateTime end_time_evaluation   , :null=>false
-    DateTime start_time_feedback   , :null=>false
-    DateTime end_time_feedback     , :null=>false
+    DateTime :start_time_evaluation , :null=>false
+    DateTime :end_time_evaluation   , :null=>false
+    DateTime :start_time_feedback   , :null=>false
+    DateTime :end_time_feedback     , :null=>false
 
     String :grade_system, :size=>64, :null=>true
     Integer :grade_parameter_1, :null=>true
@@ -140,6 +140,7 @@ db.transaction do
     primary_key :id
     String :name, :text=>true
     foreign_key :assessment_id, :assessments, :null => false, :key => [:id]
+    foreign_key :teacher_id, :users, :null => false, :key => [:id]
   end
 
   db.create_table? :student_teams do
@@ -175,7 +176,7 @@ end
   end
 
 db.transaction do
-  db.create_table(:messages) do
+  db.create_table? :messages do
     # Mïnimo número de references rtr para revisión de references
     primary_key :id
     foreign_key :user_from, :users, :null=>false, :key=>[:id]
@@ -206,5 +207,14 @@ omitted
   LEFT JOIN (SELECT criterion_id, MIN(points) as min_points,
                                                  MAX(points) as max_points FROM criterion_levels group by criterion_id) as min_levels
   ON min_levels.criterion_id=ac.criterion_id")
+end
+
+db.transaction do
+  db.create_table? :assistant_teachers do
+    foreign_key :course_id, :courses, :null=>false
+    foreign_key :teacher_id, :users, :null=>false, :key=>[:id]
+    primary_key [:course_id, :teacher_id]
+
+  end
 end
 

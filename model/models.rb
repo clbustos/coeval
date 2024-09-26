@@ -50,3 +50,7 @@ end
 class StudentTeam < Sequel::Model
   self.unrestrict_primary_key
 end
+
+class AssistantTeacher < Sequel::Model
+  self.unrestrict_primary_key
+end

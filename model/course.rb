@@ -2,6 +2,32 @@ class Course < Sequel::Model
   def teacher_name
     User[self[:teacher_id]].name
   end
+  def institution_name
+    Institution[self[:institution_id]].name
+  end
+  def assistant_teachers
+    User.where(id: AssistantTeacher.where(:course_id=>self[:id]).map(:teacher_id)  )
+  end
+
+  def update_assistant_teachers(teachers_to_add)
+    teachers_to_add||=[]
+    teachers_to_add=teachers_to_add.map {|v| v.to_i}
+    current_teachers=AssistantTeacher.where(course_id:self[:id]).map(:teacher_id)
+    #$log.info(current_teachers)
+    #$log.info(teachers_to_add)
+    to_add = teachers_to_add - current_teachers
+    to_delete = current_teachers - teachers_to_add
+    $db.transaction do
+      to_add.each do |teacher_id|
+        AssistantTeacher.insert(course_id:self[:id], teacher_id:teacher_id)
+      end
+      to_delete.each do |teacher_id|
+        AssistantTeacher.where(course_id:self[:id], teacher_id:teacher_id).delete
+      end
+    end
+    true
+
+  end
   def students
     User.where(id:StudentCourse.where(:course_id=>self[:id]).map{|v|v[:student_id]})
   end

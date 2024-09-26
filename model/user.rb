@@ -27,7 +27,19 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class User < Sequel::Model
-
+  # Users that have both evaluation and course admin
+  def self.lead_teachers
+    User.where(:id=>$db["SELECT DISTINCT(u.id) as u_id
+FROM users u INNER JOIN authorizations_roles ar1 ON u.role_id=ar1.role_id
+INNER JOIN authorizations_roles ar2 ON u.role_id=ar2.role_id
+WHERE ar1.authorization_id='assessment_admin' AND ar2.authorization_id='course_admin'" ].map(:u_id))
+  end
+  def self.assistant_teachers
+    User.where(:id=>$db["SELECT DISTINCT(u.id) as u_id
+FROM users u INNER JOIN authorizations_roles ar1 ON u.role_id=ar1.role_id
+INNER JOIN authorizations_roles ar2 ON u.role_id=ar2.role_id
+WHERE ar1.authorization_id='assessment_view' AND ar2.authorization_id='course_view'" ].map(:u_id))
+  end
   def courses
     Course.where(:id=>StudentCourse.where(:student_id=>self[:id]).map(:course_id))
   end

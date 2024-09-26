@@ -3,6 +3,14 @@
   %a.btn.btn-default{:href=>url("/course/new")}
     %span.glyphicon.glyphicon-plus-sign
     =t(:New_course)
+%form{method:"get", action:url("courses")}
+  .form_group
+    %label{for:"course_status_id"}=t(:course_status)
+    %select{name:"course_status", id:"course_status_id"}
+      %option{value:"only_active", selected: (@course_status.nil? or @course_status=='only_active')}=t(:Only_active)
+      %option{value:"only_inactive", selected: @course_status=='only_inactive'}=t(:Only_inactive)
+      %option{value:"both_active_and_inactive", selected: @course_status=='both_active_and_inactive'}=t(:Both_active_and_inactive)
+  %button.btn.btn-default{type:"submit"}=t(:Send)
 %table.table.table-bordered
   %thead
     %th=t(:Id)

@@ -13,13 +13,32 @@
       %span{ :name=>"name"}=@course[:id]
     %div{:class=>"list-group-item"}
       %span{:class=>"titulo"}=t(:Name)
-      %input{type:'textbox', name:'name', value: @course[:name], style:'width:50%'}
+      %input{type:'textbox', name:'name', value: @course[:name], style:'width:50%', required:true}
     %div{:class=>"list-group-item"}
       %span{:class=>"titulo"}=t(:Description)
       %input{type:'textbox', name:'description', value: @course[:description], style:'width:80%'}
     %div{:class=>"list-group-item"}
       %span{:class=>"titulo"}=t(:Active)
       %input{type:'checkbox', name:'active', checked:@course[:active]}
+    %div{:class=>"list-group-item"}
+      %span{:class=>"titulo"}=t(:Institution)
+      %select.form-control{name:"institution"}
+        -@institutions.each do |institution|
+          %option{value: institution[:id]}=institution[:name]
+    %div{:class=>"list-group-item"}
+      %span{:class=>"titulo"}=t(:Lead_teacher)
+      %select.form-control{name:"teacher"}
+        -@lead_teachers.each do |teacher|
+          %option{value: teacher[:id], selected:teacher[:id]==@course[:teacher_id]}=teacher[:name]
+    %div{:class=>"list-group-item"}
+      %span{:class=>"titulo"}=t(:Assistant_teacher)
+      %div
+        - @assistant_teachers.each do |teacher|
+          %input{
+            type:"checkbox",
+            name:"assistant_teacher[#{teacher[:id]}]",
+            checked: @current_assistant_teachers_id.include?(teacher[:id])
+          }=teacher[:name]
 
 
   %input.btn.btn-default{type:"submit", name:"save", value:t(:Save)}

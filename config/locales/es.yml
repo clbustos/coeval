@@ -1,4 +1,13 @@
 es:
+  Report_excel_import_course: "Report excel import: %{new_students} created, %{old_students} already created"
+  General_information: "Información general"
+  No_students: "Sin estudiantes"
+  Lead_teacher: "Profesor a cargo"
+  Assistant_teachers: "Profesores asistentes"
+  Assistant_teacher: "Profesor asistente"
+  course_status: "Estado del curso"
+  Only_inactive: "Sólo inactivo"
+  Both_active_and_inactive: "Tanto activo como inactivo"
   Assessment: "Evaluación"
   Assessment_deleted: "Evaluación eliminada"
   Student_Assessments: "Evaluaciones de los estudiantes"
@@ -59,6 +68,7 @@ es:
     assessment_incomplete: "La evaluación está incompleta"
   Assessment_incomplete: "Evaluación incompleta"
   Students_to_evaluate: "Estudiantes para evaluar"
+  No_assessments: "Sin evaluaciones"
   No_assessments_for_this_user: "Sin evaluaciones para este usuario"
   Students: "Estudiantes"
   Evaluator: "Evaluador"
@@ -106,8 +116,8 @@ es:
   All: "Todos"
   APA_Reference: "Referencia APA"
   APA_references: "Referencias APA"
-  App_title: "Buhos"
-  App_title_installer: "Instalación - Buhos"
+  App_title: "Coeval"
+  App_title_installer: "Instalación - Coeval"
   Analyze: "Analizar"
   Analysis_form: "Formulario de análisis"
   archivo:
@@ -563,6 +573,7 @@ es:
     course_view: "Curso: Ver"
     canonical_document_admin: "Documento Canónico: Admin"
     canonical_document_view: "Documento Canónico: Ver"
+    dashboard_view: "Tablero: Ver"
     semantic_scholar_query: "Semantic Scholar: Consultar"
     crossref_query: 'Crossref: Consultar'
     file_admin: 'Archivos: Admin'
