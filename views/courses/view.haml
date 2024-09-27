@@ -43,6 +43,7 @@
 
 - if auth_to("course_view")
   %h3=t(:Students)
+  %p=t(:Student_number, number:@students.count)
   %ul.list_group
     -@students.each do |student|
       %li=student[:name]

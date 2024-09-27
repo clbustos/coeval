@@ -1,4 +1,6 @@
 es:
+  Student_number: "Número de estudiantes: %{number}"
+  No_student_groups: "No hay grupo de estudiantes"
   Report_excel_import_course: "Report excel import: %{new_students} created, %{old_students} already created"
   General_information: "Información general"
   No_students: "Sin estudiantes"
