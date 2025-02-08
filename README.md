@@ -67,11 +67,7 @@ The admin user have password 'admin' by default. You should change as soon as po
 ### Developers
 
 * **Claudio  Bustos** - *Main developer* - [clbustos](https://github.com/clbustos)
-
-### Contributions
 * **Astrid Sarmiento** - Contributor in theoretical aspects of psychology and UX support.
-
-
 
 ## Built With
 * [Sinatra](http://sinatrarb.com/) - Sinatra is a DSL for quickly creating web applications on Ruby with minimal effort.
