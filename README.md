@@ -64,6 +64,15 @@ To fill the database with minimum information to work.
 The admin user have password 'admin' by default. You should change as soon as possible.
 
 
+### Developers
+
+* **Claudio  Bustos** - *Main developer* - [clbustos](https://github.com/clbustos)
+
+### Contributions
+* **Astrid Sarmiento** - Contributor in theoretical aspects of psychology and UX support.
+
+
+
 ## Built With
 * [Sinatra](http://sinatrarb.com/) - Sinatra is a DSL for quickly creating web applications on Ruby with minimal effort.
 * [Sequel](https://github.com/jeremyevans/sequel) - Sequel is a simple, flexible, and powerful SQL database access toolkit for Ruby. It offers an abstraction layer and ORM functionalities, among other things.
