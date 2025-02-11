@@ -30,6 +30,8 @@
         - @current_assistant_teachers.each do |assistant_teacher|
           %li=assistant_teacher[:name]
 
+
+
 %h3=t(:Assessments)
 
 - if @course.assessments.count>0
@@ -37,6 +39,11 @@
     - @course.assessments.each do |assessment|
       %li
         %a{:href=>url("/assessment/#{assessment[:id]}")}=assessment[:name]
+  - if auth_to('assessment_admin')
+    .btn-group.btn-group-sm
+      %a.btn.btn-default{:href=>url("/course/#{@course[:id]}/response_detail")}
+        =t(:Response_detail)
+
 - else
   %p
     %em=t(:No_assessments)

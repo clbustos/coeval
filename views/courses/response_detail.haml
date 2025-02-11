@@ -6,8 +6,9 @@
   %li.active=t(:Response_detail)
 
 - if auth_to('assessment_admin')
-  %a.btn.btn-default{:href=>url("/course/#{@course[:id]}/response_detail_excel")}
-    =t(:Export_to_Excel)
+  .btn-group.btn-group-sm
+    %a.btn.btn-default{:href=>url("/course/#{@course[:id]}/response_detail_excel")}
+      =t(:Export_to_Excel)
 
 
 %table.table.table-striped
