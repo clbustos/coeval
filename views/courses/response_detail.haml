@@ -1,0 +1,32 @@
+.heading=t_course_title(@course[:name],:Response_detail)
+%ul.breadcrumb
+  %li
+    %a{:href=>url("/courses")}=t(:Courses)
+    %a{:href=>url("/course/#{@course[:id]}")}=@course[:name]
+  %li.active=t(:Response_detail)
+
+- if auth_to('assessment_admin')
+  %a.btn.btn-default{:href=>url("/course/#{@course[:id]}/response_detail_excel")}
+    =t(:Export_to_Excel)
+
+
+%table.table.table-striped
+  %thead
+    %th=t(:Student)
+    - @crp.criteria.each do |criterion|
+      %th="#{criterion[:assessment_name]} - #{criterion[:criterion_name]}"
+    %th=t(:Total)
+  %tbody
+    -@crp.pivot.each_pair do |student_id, student_data|
+      %tr
+        %td=@students[student_id][:name]
+        - @crp.criteria.each do |criterion|
+          - assessment_id=criterion[:assessment_id]
+          - criterion_id= criterion[:criterion_id]
+          %td=@gs_hash[assessment_id].output(student_data[assessment_id][criterion_id])
+        %td.active
+          -total=@crp.student_total[student_id]
+          - if total
+            =total.round(1)
+          - else
+            ="--"

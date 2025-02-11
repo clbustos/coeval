@@ -110,6 +110,60 @@ post '/course/:id/edit' do |id|
 
 
 end
+get '/course/:id/response_detail' do |id|
+  halt_unless_auth('course_admin')
+  @course=Course[id]
+  @crp=@course.response_pivot
+  @students=@course.students
+  @gs_hash=@course.assessments.inject({}) {|ac,assessment|
+    ac[assessment[:id]]=Coeval::GradingSystem.new(assessment)
+    ac
+  }
+  haml "courses/response_detail".to_sym, escape_html: false
+end
+
+get '/course/:id/response_detail_excel' do |id|
+  require 'caxlsx'
+  halt_unless_auth('course_admin')
+  @course=Course[id]
+  @crp=@course.response_pivot
+  @students=@course.students
+  @gs_hash=@course.assessments.inject({}) {|ac,assessment|
+    ac[assessment[:id]]=Coeval::GradingSystem.new(assessment)
+    ac
+  }
+  package = Axlsx::Package.new
+  wb = package.workbook
+  blue_cell = wb.styles.add_style  :fg_color => "0000FF", :sz => 14, :alignment => { :horizontal=> :center }
+  header_inter=@crp.criteria.map do |criterion|
+    "#{criterion[:assessment_name]} - #{criterion[:criterion_name]}"
+  end
+  header=["student"]+header_inter+[I18n::t(:Total)]
+
+  wb.add_worksheet(:name => t(:Results)) do |sheet|
+    sheet.add_row header, :style=> [blue_cell]*header.length
+    @crp.pivot.each_pair do |student_id, student_data|
+      student_name=@students[student_id][:name]
+      grades=@crp.criteria.map do |criterion|
+        assessment_id=criterion[:assessment_id]
+        criterion_id= criterion[:criterion_id]
+        @gs_hash[assessment_id].grade(student_data[assessment_id][criterion_id])
+      end
+
+      total=@crp.student_total[student_id]
+      sheet.add_row [student_name]+grades+[total]
+    end
+  end
+
+
+
+  headers 'Content-Type' => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  headers 'Content-Disposition' => "attachment; filename=course_results_#{id}.xlsx"
+  package.to_stream
+
+
+end
+
 
 get '/course/:id/users_batch_edition/excel_export' do |id|
   require 'caxlsx'
@@ -121,7 +175,8 @@ get '/course/:id/users_batch_edition/excel_export' do |id|
   blue_cell = wb.styles.add_style  :fg_color => "0000FF", :sz => 14, :alignment => { :horizontal=> :center }
 
   users=@course.students
-  institutions=Institution.to_hash(:id,:name)
+
+  #institutions=Institution.to_hash(:id,:name)
   wb.add_worksheet(:name => t(:Users)) do |sheet|
     header=["login", "email", "language", "name"]
     sheet.add_row header, :style=> [blue_cell]*9
@@ -130,6 +185,7 @@ get '/course/:id/users_batch_edition/excel_export' do |id|
       sheet.add_row row
     end
   end
+
 
   headers 'Content-Type' => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   headers 'Content-Disposition' => "attachment; filename=users_course_#{id}.xlsx"
@@ -251,7 +307,6 @@ post '/course/excel_import' do
   redirect back
 
 end
-
 
 
 

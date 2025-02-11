@@ -21,6 +21,8 @@ gem 'mimemagic'
 gem "certified", :platforms => :mingw
 gem 'rubyXL'
 gem 'caxlsx'
+gem 'ostruct'
+gem 'logger'
 
 #gem 'rubyXL'
 #gem 'ai4r'

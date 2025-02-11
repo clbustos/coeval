@@ -1,4 +1,5 @@
 en:
+  Response_detail: "Response detail"
   Student_number: "Student number: %{number}"
   No_student_groups: "Sin grupos de estudiantes"
   Report_excel_import_course: "Report excel import: %{new_students} created, %{old_students} already created"
