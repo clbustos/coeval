@@ -77,7 +77,6 @@ post '/admin/users_batch_edition/excel_import' do
   missing_fields=lista_excel.find_all{|field,value| value.nil?}.map{|x| x[0]}
 
   if missing_fields.include? ['email', 'login', 'name', 'active','institution','language','role_id']
-    
     result.error("Missing fields:#{missing_fields.join(', ')}")
     add_result(result)
     redirect url("/admin/users_batch_edition")
@@ -100,10 +99,10 @@ post '/admin/users_batch_edition/excel_import' do
       email=row[id_email]
       login=row[id_login]
       name=row[id_name]
-      assessment=row[id_assessment]
-      teacher=row[id_teacher]
-      course=row[id_course]
-      team=row[id_team]
+      assessment=id_assessment ? row[id_assessment] : nil
+      teacher=id_teacher ? row[id_teacher] : nil
+      course=id_course ?  row[id_course] : nil
+      team=id_team ? row[id_team] : nil
 
       $log.info([user_id, active, email, login, name, assessment, teacher, course, team])
       next if login.nil? or name.nil?
@@ -162,27 +161,29 @@ post '/admin/users_batch_edition/excel_import' do
         if !teacher_o
           raise "Teacher doesn't not exists #{teacher}"
         end
+        if course
+          course_id=course_names[course] || Course.find_or_create(name:course, teacher_id:teacher_o[:id], active:1,
+                                                                  institution_id:institution_id)[:id]
+          $log.info(course_id)
+          $log.info(user_o)
+          StudentCourse.find_or_create(course_id:course_id, student_id:user_o[:id])
+          if assessment
+            assessment_id=assessment_names[assessment] || Assessment.find_or_create(active:1, name:assessment,
+                                                                                    course_id: course_id,
+                                                                                    grade_system: 'chilean')[:id]
+            if team
+              team_id=team_names[team] || Team.find_or_create(name:team, assessment_id:assessment_id)[:id]
+              StudentTeam.find_or_create(team_id:team_id, student_id:user_o[:id])
+            end
+
+          end
+        end
       end
 
-      if course
-        course_id=course_names[course] || Course.find_or_create(name:course, teacher_id:teacher_o[:id], active:1,
-                                                                institution_id:institution_id)[:id]
-        $log.info(course_id)
-        $log.info(user_o)
-        StudentCourse.find_or_create(course_id:course_id, student_id:user_o[:id])
 
-      end
-      if assessment
-        assessment_id=assessment_names[assessment] || Assessment.find_or_create(active:1, name:assessment,
-                                                                                course_id: course_id,
-                                                                                grade_system: 'chilean')[:id]
 
-      end
 
-      if team
-        team_id=team_names[team] || Team.find_or_create(name:team, assessment_id:assessment_id)[:id]
-        StudentTeam.find_or_create(team_id:team_id, student_id:user_o[:id])
-      end
+
 
 
 
