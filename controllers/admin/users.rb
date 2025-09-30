@@ -75,7 +75,9 @@ post '/admin/users_batch_edition/excel_import' do
                "role_id"=>id_role, "assessment"=>id_assessment}
 
   missing_fields=lista_excel.find_all{|field,value| value.nil?}.map{|x| x[0]}
-  if missing_fields.length >0
+
+  if missing_fields.include? ['email', 'login', 'name', 'active','institution','language','role_id']
+    
     result.error("Missing fields:#{missing_fields.join(', ')}")
     add_result(result)
     redirect url("/admin/users_batch_edition")

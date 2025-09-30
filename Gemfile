@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-gem 'rake'
+gem 'rake', ">=13.0.0"
 gem 'rack'
 gem 'mail'
 gem "sinatra",  '>=2.0.1'
@@ -14,8 +14,8 @@ gem 'serrano'
 gem 'dotenv'
 gem 'nokogiri', :force_ruby_platform=> true
 gem 'moneta'
-gem 'simple_xlsx_reader'
 gem "i18n"
+gem 'simple_xlsx_reader'
 gem "sqlite3", :force_ruby_platform=>:true
 gem 'mimemagic'
 gem "certified", :platforms => :mingw
@@ -37,6 +37,7 @@ group :production do
 end
 group :development do
   gem 'pkgr'
+  gem 'rubocop'
   gem 'yard', :require => false
   gem 'yard-sinatra', :require => false
   gem 'pry'

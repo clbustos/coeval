@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-# Copyright (c) 2016-2023, Claudio Bustos Navarrete
+# Copyright (c) 2016-2025, Claudio Bustos Navarrete
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -70,15 +70,22 @@ end
 
 set :session_secret, '1230f527d209bd4cd94db2dbdecf29cabaa6499c04bcd83278e3863cd7b25490859df1173c2aa2fd2ede7db09b9208b588badf8298519c23fc16220b356c0029'
 
-enable :logging, :dump_errors, :raise_errors, :sessions
+
+
+use Rack::Session::Cookie, :key => 'rack.session',
+                           :path => '/',
+                           :secret => '1230f527d209bd4cd94db2dbdecf29cabaa6499c04bcd83278e3863cd7b25490859df1173c2aa2fd2ede7db09b9208b588badf8298519c23fc16220b356c0029'
+
+
+enable :logging, :dump_errors, :raise_errors
 
 configure :development do |c|
-  c.enable :logging, :dump_errors, :raise_errors, :sessions, :show_errors, :show_exceptions
+  c.enable :logging, :dump_errors, :raise_errors,  :show_errors, :show_exceptions
   set :show_exceptions, :after_handler
 end
 
 configure :production do |c|
-  c.enable :logging, :dump_errors, :raise_errors, :sessions, :show_errors, :show_exceptions
+  c.enable :logging, :dump_errors, :raise_errors,  :show_errors, :show_exceptions
   set :show_exceptions, :after_handler
 end
 
@@ -155,8 +162,6 @@ end
 
 
 get '/' do
-
-  #Flamegraph.generate("test") do
   log.info("Parto en /")
   if session['user'].nil?
     log.info("/ sin id: basico")
