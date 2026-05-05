@@ -8,6 +8,43 @@
 
 # @!group Assessments
 
+ASSESSMENT_DATETIME_FIELDS=[:start_time_evaluation, :end_time_evaluation, :start_time_feedback, :end_time_feedback]
+
+def assessment_datetime_values(params)
+  require 'time'
+  ASSESSMENT_DATETIME_FIELDS.inject({}) do |ac, field|
+    field_name=field.to_s
+    ac[field]=if !params["#{field_name}_nil"].nil? or params[field_name].to_s.strip.empty?
+                nil
+              else
+                Time.parse(params[field_name])
+              end
+    ac
+  end
+end
+
+def valid_assessment_datetime_order?(values)
+  fixed_values=ASSESSMENT_DATETIME_FIELDS.map {|field| values[field]}.compact
+  fixed_values.each_cons(2).all? {|previous_value, next_value| next_value>=previous_value}
+end
+
+def halt_invalid_assessment_datetime_order(values)
+  return if valid_assessment_datetime_order?(values)
+
+  add_message(t(:Assessment_datetime_order_error), :error)
+  redirect back
+end
+
+def excel_percentage_from_proportion(value)
+  return '--' if value.nil?
+
+  (value*100.0).to_i
+end
+
+def excel_grade(grading_system, value)
+  grading_system.grade(value) || '--'
+end
+
 
 get '/assessments' do
   halt 403 unless (auth_to('assessment_view'))
@@ -49,8 +86,65 @@ get '/assessment/:id' do |id|
   halt 403 unless (auth_to('assessment_view') or auth_to('assessment_evaluate'))
   @user=User[session["user_id"]]
   @assessment=Assessment[id]
+  raise Coeval::NoAssessmentIdError, id unless @assessment
   @gs=Coeval::GradingSystem.new(@assessment)
+  if auth_to('assessment_admin')
+    @course_students=@assessment.course.students.order(:name)
+    @teams_for_assignment=@assessment.teams.order(:name)
+    @student_team_ids=$db[:student_teams]
+                      .join(:teams, id: :team_id)
+                      .where(assessment_id:@assessment[:id])
+                      .select(:student_id, :team_id)
+                      .all
+                      .inject({}) {|ac,row| ac[row[:student_id]]=row[:team_id]; ac}
+  end
   haml "assessments/view".to_sym, escape_html: false
+end
+
+post '/assessment/:id/teams' do |id|
+  halt 403 unless auth_to('assessment_admin')
+  @assessment=Assessment[id]
+  raise Coeval::NoAssessmentIdError, id unless @assessment
+
+  name=params['name'].to_s.strip
+  if name.empty?
+    add_message(t(:Team_without_name), :error)
+    redirect back
+  end
+
+  Team.find_or_create(name:name, assessment_id:@assessment[:id]) do |team|
+    team.teacher_id=params['teacher_id'].to_s.empty? ? @assessment.course[:teacher_id] : params['teacher_id']
+  end
+  add_message(t(:Team_created, team_name:name))
+  redirect url("/assessment/#{@assessment[:id]}")
+end
+
+post '/assessment/:id/student_teams' do |id|
+  halt 403 unless auth_to('assessment_admin')
+  @assessment=Assessment[id]
+  raise Coeval::NoAssessmentIdError, id unless @assessment
+  team=Team[params['team_id']]
+  raise Coeval::NoTeamIdError, params['team_id'] unless team
+  halt 403 unless team[:assessment_id].to_i==@assessment[:id].to_i
+
+  student_ids=Array(params['student_ids']).map(&:to_i)
+  if student_ids.empty?
+    add_message(t(:No_students_selected), :error)
+    redirect back
+  end
+
+  course_student_ids=StudentCourse.where(course_id:@assessment[:course_id], student_id:student_ids).map(:student_id)
+  halt 403 unless course_student_ids.length==student_ids.length
+
+  team_ids=@assessment.teams.map(:id)
+  $db.transaction do
+    StudentTeam.where(team_id:team_ids, student_id:student_ids).delete
+    student_ids.each do |student_id|
+      StudentTeam.find_or_create(team_id:team[:id], student_id:student_id)
+    end
+  end
+  add_message(t(:Students_assigned_to_team, count:student_ids.length, team_name:team[:name]))
+  redirect url("/assessment/#{@assessment[:id]}")
 end
 
 get '/assessment/:id/edit' do |id|
@@ -89,10 +183,10 @@ get '/assessment/:id/export_excel' do |id|
                      students[row[:student_id]],
                      row[:n_responses_total],
                      row[:avg_perc_complete].to_i,
-                     (row[:response_avg_partial_total]*100.0).to_i,
-                     (row[:response_avg_total]*100.0).to_i,
-                     @gs.grade(row[:response_avg_partial_total]),
-                     @gs.grade(row[:response_avg_total])
+                     excel_percentage_from_proportion(row[:response_avg_partial_total]),
+                     excel_percentage_from_proportion(row[:response_avg_total]),
+                     excel_grade(@gs, row[:response_avg_partial_total]),
+                     excel_grade(@gs, row[:response_avg_total])
                     ]
     end
   end
@@ -124,6 +218,8 @@ post '/assessment/:id/duplicate' do |id|
   raise Coeval::NoAssessmentIdError, original_assessment_id unless @assessment
 
   @criteria_hash=@assessment.criteria_hash
+  datetime_values=assessment_datetime_values(params)
+  halt_invalid_assessment_datetime_order(datetime_values)
   # Primero, genero el archivo de copia
   new_assessment_id=nil
   $db.transaction(:rollback=>:reraise) do
@@ -136,10 +232,10 @@ post '/assessment/:id/duplicate' do |id|
       grade_system: params['grade_system'].strip,
       grade_parameter_1: params['grade_parameter_1']=="" ? nil : params['grade_parameter_1'],
       grade_parameter_2: params['grade_parameter_2']=="" ? nil : params['grade_parameter_2'],
-      start_time_evaluation:!params['start_time_evaluation_nil'].nil? ? nil: params['start_time_evaluation'],
-      end_time_evaluation:!params['end_time_evaluation_nil'].nil? ? nil :  params['end_time_evaluation'],
-      start_time_feedback:!params['start_time_feedback_nil'].nil? ? nil : params['start_time_feedback'],
-      end_time_feedback:!params['end_time_feedback_nil'].nil? ? nil : params['end_time_feedback']
+      start_time_evaluation:datetime_values[:start_time_evaluation],
+      end_time_evaluation:datetime_values[:end_time_evaluation],
+      start_time_feedback:datetime_values[:start_time_feedback],
+      end_time_feedback:datetime_values[:end_time_feedback]
     )
     new_assessment_id=@new_assessment[:id]
     params['criterion'].each_pair do |index, order|
@@ -178,6 +274,9 @@ post '/assessment/:id/edit' do |id|
   @assessment=Assessment[id]
   raise Coeval::NoAssessmentIdError, id unless @assessment
 
+  datetime_values=assessment_datetime_values(params)
+  halt_invalid_assessment_datetime_order(datetime_values)
+
   if params["name"].length>0
     #$log.info(params)
     @assessment.update(name:params["name"].strip,
@@ -186,21 +285,21 @@ post '/assessment/:id/edit' do |id|
                        grade_system: params['grade_system'].strip,
                        grade_parameter_1: params['grade_parameter_1']=="" ? nil : params['grade_parameter_1'],
                        grade_parameter_2: params['grade_parameter_2']=="" ? nil : params['grade_parameter_2'],
-                       start_time_evaluation:!params['start_time_evaluation_nil'].nil? ? nil: params['start_time_evaluation'],
-                       end_time_evaluation:!params['end_time_evaluation_nil'].nil? ? nil :  params['end_time_evaluation'],
-                      start_time_feedback:!params['start_time_feedback_nil'].nil? ? nil : params['start_time_feedback'],
-                        end_time_feedback:!params['end_time_feedback_nil'].nil? ? nil : params['end_time_feedback']
+                       start_time_evaluation:datetime_values[:start_time_evaluation],
+                       end_time_evaluation:datetime_values[:end_time_evaluation],
+                       start_time_feedback:datetime_values[:start_time_feedback],
+                       end_time_feedback:datetime_values[:end_time_feedback]
                        )
 
 
   end
 
-  params["criterion"].each_pair do |criterion_id, criterion_order|
+  params.fetch("criterion", {}).each_pair do |criterion_id, criterion_order|
     if criterion_order.strip.length>0
       ac=AssessmentCriterion.find_or_create(assessment_id:id, criterion_id:criterion_id)
       ac.update(criterion_order:criterion_order)
     else
-      AssessmentCriterion[assessment_id:id, criterion_id:criterion_id].delete
+      AssessmentCriterion.where(assessment_id:id, criterion_id:criterion_id).delete
     end
 
   end

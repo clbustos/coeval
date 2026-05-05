@@ -43,6 +43,21 @@ class UserDashboardInfo
     res[:guardados]==res[:n]
   end
 
+  def active_teacher_courses
+    lead_courses=Course.where(teacher_id:@user[:id], active:true).all.map do |course|
+      {course:course, role: :Lead_teacher}
+    end
+
+    assistant_course_ids=AssistantTeacher.where(teacher_id:@user[:id]).map(:course_id)
+    assistant_courses=Course.where(id:assistant_course_ids, active:true).all.map do |course|
+      {course:course, role: :Assistant_teacher}
+    end
+
+    (lead_courses + assistant_courses)
+      .uniq {|course_data| course_data[:course][:id]}
+      .sort_by {|course_data| course_data[:course][:name].to_s.downcase}
+  end
+
 
   def quantitative_assessment(assessment, type)
     raise Coeval::NoAssessmentIdError, nil unless assessment
@@ -52,7 +67,20 @@ class UserDashboardInfo
     return nil unless team_o
     rp=team_o.response_pivot(type)
 
-    rp.pivot[self.user[:id]].merge(total: rp.calculate_student_total[self.user[:id]])
+    student_pivot=rp.pivot[self.user[:id]]
+    return nil unless student_pivot
+
+    criteria_names=rp.criteria.inject({}) do |ac, criterion|
+      ac[criterion[:criterion_id]]=criterion[:criterion_name]
+      ac
+    end
+    named_pivot=student_pivot.inject({}) do |ac, criterion_data|
+      criterion_id, value=criterion_data
+      ac[criteria_names.fetch(criterion_id, criterion_id)]=value
+      ac
+    end
+
+    named_pivot.merge(total: rp.calculate_student_total[self.user[:id]])
   end
   def qualitative_assessment(assessment)
     raise Coeval::NoAssessmentIdError, nil unless assessment

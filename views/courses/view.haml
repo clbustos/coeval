@@ -48,6 +48,27 @@
   %p
     %em=t(:No_assessments)
 
+- if auth_to("assessment_admin")
+  %h4=t(:New_assessment)
+  %form.form-inline{method:'post', action:url("/course/#{@course[:id]}/assessments")}
+    .form-group
+      %label=t(:Name)
+      %input.form-control{type:'text', name:'name', required:true}
+    .form-group
+      %label=t(:Description)
+      %input.form-control{type:'text', name:'description'}
+    .form-group
+      %label=t(:Grade_system)
+      %input.form-control{type:'text', name:'grade_system', value:'chilean'}
+    .form-group
+      %label=t(:Grade_parameter_1)
+      %input.form-control{type:'number', name:'grade_parameter_1', value:60}
+    .checkbox
+      %label
+        %input{type:'checkbox', name:'active', checked:true}
+        =t(:Active)
+    %button.btn.btn-primary{type:'submit'}=t(:Create)
+
 - if auth_to("course_view")
   %h3=t(:Students)
   %p=t(:Student_number, number:@students.count)
@@ -76,6 +97,33 @@
       %em=t(:No_student_groups)
 
 - if auth_to("course_admin")
+  %h4=t(:Add_student_to_course)
+  %form.form-inline{method:'get', action:url("/course/#{@course[:id]}")}
+    .form-group
+      %label=t(:Search_by_name)
+      %input.form-control{type:'text', name:'student_search', value:@student_search}
+    %button.btn.btn-default{type:'submit'}=t(:Search)
+  - if @student_search and @student_search.length>0
+    - if @student_search_results.count>0
+      %table.table
+        %thead
+          %tr
+            %th=t(:Student)
+            %th=t(:Email)
+            %th=t(:Actions)
+        %tbody
+          - @student_search_results.each do |student|
+            %tr
+              %td=student[:name]
+              %td=student[:email]
+              %td
+                %form{method:'post', action:url("/course/#{@course[:id]}/student_courses")}
+                  %input{type:'hidden', name:'user_id', value:student[:id]}
+                  %button.btn.btn-sm.btn-primary{type:'submit'}=t(:Add)
+    - else
+      %p
+        %em=t(:No_students_found)
+
   %h4=t("users_admin.excel_export").to_sym
   .btn-group
     %a.btn.btn-sm.btn-default{:href=>"/course/#{@course[:id]}/users_batch_edition/excel_export"}

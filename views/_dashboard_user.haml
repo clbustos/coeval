@@ -1,7 +1,36 @@
 %h2=t(:Dashboard_user, user_name:user[:name])
 - udi=UserDashboardInfo.new(user)
-- user.assessments.where(:active=>true).each do |assessment|
+- teacher_courses=udi.active_teacher_courses
+- active_assessments=user.assessments.where(:active=>true)
+- if teacher_courses.any?
+  .panel.panel-default
+    .panel-heading
+      .panel-title=t(:Active_assigned_courses)
+    .panel-body
+      %table.table
+        %thead
+          %tr
+            %th=t(:Course)
+            %th=t(:Role)
+            %th=t(:Assessments)
+        %tbody
+          - teacher_courses.each do |course_data|
+            - course=course_data[:course]
+            %tr
+              %td
+                %a{:href=>url("/course/#{course[:id]}")}=course[:name]
+              %td=t(course_data[:role])
+              %td
+                - course_assessments=course.assessments.where(:active=>true).order(:name)
+                - if course_assessments.count>0
+                  %ul.list-unstyled
+                    - course_assessments.each do |assessment|
+                      %li
+                        %a{:href=>url("/assessment/#{assessment[:id]}")}=assessment[:name]
+                - else
+                  %em=t(:No_assessments)
+- active_assessments.each do |assessment|
   =partial(:dashboard_assessment, :locals=>{:user=>user, :assessment=>assessment, :udi=>udi})
-- if user.assessments.where(:active=>true).count==0
+- if active_assessments.count==0 and teacher_courses.empty?
   %p
     %em=t(:No_assessments_for_this_user)

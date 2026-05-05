@@ -173,3 +173,4 @@ get '/' do
   #end
 end
 
+Sinatra::Application.run! if __FILE__ == $PROGRAM_NAME

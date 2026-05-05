@@ -52,7 +52,7 @@ module Sinatra
         $log.info(terms)
         if terms.is_a? String
           ::I18n::t("sr_taxonomy_category.#{terms}")
-        elsif is_a? Array
+        elsif terms.is_a? Array
           terms.map {|term| ::I18n::t("sr_taxonomy_category.#{term}")}.join("," )
         end
       end
@@ -137,13 +137,13 @@ module Sinatra
       end
 
 
-      #$log.info(app.root)
-      unless defined?(app.locales)
-        app.set :locales, File.join(app.root, 'config','locales', '*.yml')
-      end
+      app.set :locales, File.expand_path('../../config/locales/*.yml', __dir__)
       ::I18n.load_path+=Dir[app.locales]
       ::I18n.config.available_locales = [:es,:en,:pl]
       ::I18n.default_locale=:es
+      require 'i18n/backend/fallbacks'
+      ::I18n::Backend::Simple.include(::I18n::Backend::Fallbacks)
+      ::I18n.fallbacks.map(en: :es, pl: :es)
       #::I18n.backend.load_translations(app.locales)
     end
   end

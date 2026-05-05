@@ -48,6 +48,7 @@ module Buhos
     else
       $db=Sequel.connect(db, :encoding => 'utf8',:reconnect=>true, :keep_reference=>keep_reference)
     end
+    Sequel::Model.db = $db
 
 
 
@@ -79,7 +80,7 @@ if ENV['JAWSDB_URL'] and ENV['USE_JAWSDB']=='true'
   Buhos.connect_to_db(url_mysql)
 else
   Buhos.connect_to_db(ENV['DATABASE_URL'], ENV['RACK_ENV'].to_s != "test")
-  $log.info("Init app connects to :#{ENV['DATABASE_URL']}")
+  $log.info("Init app connects to :#{ENV['DATABASE_URL']}") if $log
 end
 
 
@@ -123,4 +124,3 @@ Sequel.inflections do |inflect|
   # inflect.irregular 'asignacion_cd','allocation_cds'
   # inflect.irregular 'tag_en_reference_bw_cn', 'tags_en_references_bw_cn'
 end
-

@@ -1,0 +1,37 @@
+.heading=t_course_title(@course[:name], :Assessments)
+%ul.breadcrumb
+  %li
+    %a{:href=>url("/courses")}=t(:Courses)
+  %li
+    %a{:href=>url("/course/#{@course[:id]}")}=@course[:name]
+  %li.active=t(:Assessments)
+
+%table.table.table-bordered
+  %thead
+    %th=t(:Id)
+    %th=t(:Name)
+    %th=t(:Description)
+    %th=t(:Active)
+    - if auth_to("assessment_admin")
+      %th=t(:Actions)
+  %tbody
+    - @assessments.each do |assessment|
+      %tr
+        %td=assessment[:id]
+        %td
+          %a{:href=>url("/assessment/#{assessment[:id]}")}=assessment[:name]
+        %td=assessment[:description]
+        %td=t_yes_no_nil(assessment[:active])
+        - if auth_to("assessment_admin")
+          %td
+            .btn-group.btn-group-sm
+              %a.btn.btn-default{:href=>url("/assessment/#{assessment[:id]}/edit")}
+                %span.glyphicon.glyphicon-pencil
+                =t(:Edit)
+              %a.btn.btn-default{:href=>url("/assessment/#{assessment[:id]}/delete")}
+                %span.glyphicon.glyphicon-remove
+                =t(:Delete)
+
+- if @assessments.count==0
+  %p
+    %em=t(:No_assessments)

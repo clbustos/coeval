@@ -1,23 +1,111 @@
-// Function to add the event listener
-function checkbox_to_datetime_listener() {
-    // Select all elements with the class "myButton"
-    const checkboxs = document.querySelectorAll('.checkbox_to_datetime');
+const assessmentDatetimeOrder = [
+    'start_time_evaluation',
+    'end_time_evaluation',
+    'start_time_feedback',
+    'end_time_feedback'
+];
 
-    // Add an event listener to each element
-    checkboxs.forEach(function(checkbox) {
-        checkbox.addEventListener('click', function() {
-            input_datetime=document.getElementById(checkbox.id.replace("_nil",""))
-            if (checkbox.checked) {
-                input_datetime.classList.add('collapse');
+function fieldInput(field) {
+    return document.getElementById(field);
+}
 
-            } else {
-                input_datetime.classList.remove('collapse');
+function fieldNilCheckbox(field) {
+    return document.getElementById(field + '_nil');
+}
 
+function fieldIsFixed(field) {
+    const checkbox = fieldNilCheckbox(field);
+    const input = fieldInput(field);
+    return input && (!checkbox || !checkbox.checked);
+}
 
+function previousFixedValue(index) {
+    for (let i = index - 1; i >= 0; i--) {
+        const field = assessmentDatetimeOrder[i];
+        const input = fieldInput(field);
+        if (fieldIsFixed(field) && input.value) {
+            return input.value;
+        }
+    }
+    return '';
+}
+
+function setMinimums() {
+    assessmentDatetimeOrder.forEach(function(field, index) {
+        const input = fieldInput(field);
+        if (input) {
+            input.min = previousFixedValue(index);
+        }
+    });
+}
+
+function pushFollowingTimes() {
+    let previous = '';
+    assessmentDatetimeOrder.forEach(function(field) {
+        const input = fieldInput(field);
+        if (!fieldIsFixed(field) || !input.value) {
+            return;
+        }
+
+        if (previous && input.value < previous) {
+            input.value = previous;
+        }
+        previous = input.value;
+    });
+    setMinimums();
+}
+
+function syncFeedbackStartFromEvaluationEnd() {
+    const evaluationEnd = fieldInput('end_time_evaluation');
+    const feedbackStart = fieldInput('start_time_feedback');
+    if (!evaluationEnd || !feedbackStart || !evaluationEnd.value || !fieldIsFixed('start_time_feedback')) {
+        return;
+    }
+    if (!feedbackStart.value || feedbackStart.value < evaluationEnd.value) {
+        feedbackStart.value = evaluationEnd.value;
+    }
+}
+
+function checkboxToDatetimeListener() {
+    document.querySelectorAll('.checkbox_to_datetime').forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            const input = fieldInput(checkbox.dataset.datetimeField);
+            if (!input) {
+                return;
             }
+
+            if (checkbox.checked) {
+                input.classList.add('collapse');
+            } else {
+                input.classList.remove('collapse');
+            }
+
+            syncFeedbackStartFromEvaluationEnd();
+            pushFollowingTimes();
         });
     });
 }
 
-// Add the event listener when the DOM is fully loaded
-document.addEventListener('DOMContentLoaded', checkbox_to_datetime_listener);
+function datetimeOrderListener() {
+    assessmentDatetimeOrder.forEach(function(field) {
+        const input = fieldInput(field);
+        if (!input) {
+            return;
+        }
+
+        input.addEventListener('change', function() {
+            if (field === 'end_time_evaluation') {
+                syncFeedbackStartFromEvaluationEnd();
+            }
+            pushFollowingTimes();
+        });
+    });
+    setMinimums();
+    syncFeedbackStartFromEvaluationEnd();
+    pushFollowingTimes();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    checkboxToDatetimeListener();
+    datetimeOrderListener();
+});
