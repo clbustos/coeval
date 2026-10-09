@@ -56,6 +56,11 @@ def assistant_can_access_assessment?(assessment, user_id)
   !AssistantTeacher[course_id:assessment[:course_id], teacher_id:user_id].nil? && assessment.course[:active]
 end
 
+def course_assistant_for_assessment?(assessment, user_id)
+  assessment.course[:teacher_id].to_i!=user_id.to_i &&
+    !AssistantTeacher[course_id:assessment[:course_id], teacher_id:user_id].nil?
+end
+
 
 get '/assessments' do
   halt 403 unless (auth_to('assessment_view'))
@@ -76,6 +81,7 @@ get '/assessment/:id/delete' do |id|
   @user=User[session["user_id"]]
   @assessment=Assessment[id]
   raise Coeval::NoAssessmentIdError, id unless @assessment
+  halt 403 if course_assistant_for_assessment?(@assessment, session['user_id'])
 
 
   haml "assessments/prepare_delete".to_sym, escape_html: false
@@ -87,6 +93,7 @@ post '/assessment/:id/delete' do |id|
   assessment_id=params['assessment_id']
   @assessment=Assessment[assessment_id]
   raise Coeval::NoAssessmentIdError, assessment_id unless @assessment
+  halt 403 if course_assistant_for_assessment?(@assessment, session['user_id'])
 
   course_id=@assessment[:course_id]
   $db.transaction(rollback: :reraise) do
@@ -103,7 +110,7 @@ get '/assessment/:id' do |id|
   @user=User[session["user_id"]]
   @assessment=Assessment[id]
   raise Coeval::NoAssessmentIdError, id unless @assessment
-  @assistant_assessment_access=auth_to('assessment_view') && !auth_to('assessment_admin')
+  @assistant_assessment_access=course_assistant_for_assessment?(@assessment, session['user_id'])
   if @assistant_assessment_access
     halt 403 unless assistant_can_access_assessment?(@assessment, session['user_id'])
   end
@@ -130,6 +137,7 @@ get '/assessment/:id/teacher_assignation' do |id|
   halt 403 unless auth_to('assessment_admin')
   @assessment=Assessment[id]
   raise Coeval::NoAssessmentIdError, id unless @assessment
+  halt 403 if course_assistant_for_assessment?(@assessment, session['user_id'])
 
   @teams=@assessment.teams.order(:name)
   course=@assessment.course
@@ -142,6 +150,7 @@ post '/assessment/:id/teacher_assignation' do |id|
   halt 403 unless auth_to('assessment_admin')
   assessment=Assessment[id]
   raise Coeval::NoAssessmentIdError, id unless assessment
+  halt 403 if course_assistant_for_assessment?(assessment, session['user_id'])
 
   team_ids=Array(params['team_ids']).map(&:to_i).uniq
   if team_ids.empty?
@@ -215,6 +224,8 @@ get '/assessment/:id/edit' do |id|
   halt 403 unless auth_to('assessment_admin')
   @user=User[session["user_id"]]
   @assessment=Assessment[id]
+  raise Coeval::NoAssessmentIdError, id unless @assessment
+  halt 403 if course_assistant_for_assessment?(@assessment, session['user_id'])
   @criteria_hash=@assessment.criteria_hash
   haml "assessments/edit".to_sym, escape_html: false
 end
@@ -226,10 +237,11 @@ get '/assessment/:id/export_excel' do |id|
   @assessment=Assessment[id]
   raise Coeval::NoAssessmentIdError, id unless @assessment
   assistant_team_ids=assistant_team_ids_for(@assessment, session['user_id'])
-  halt 403 unless auth_to('assessment_admin') || (auth_to('assessment_view') && assistant_team_ids.any?)
+  course_assistant=course_assistant_for_assessment?(@assessment, session['user_id'])
+  halt 403 unless (auth_to('assessment_admin') && !course_assistant) || (auth_to('assessment_view') && assistant_team_ids.any?)
   @gs=Coeval::GradingSystem.new(@assessment)
   response_details=@assessment.response_detail_student
-  response_details=response_details.where(team_id:assistant_team_ids) unless auth_to('assessment_admin')
+  response_details=response_details.where(team_id:assistant_team_ids) if course_assistant || !auth_to('assessment_admin')
   rds=response_details.all
   teams=Team.where(:id=>rds.map {|v| v[:team_id]}.uniq).to_hash(:id, :name)
   students=User.where(:id=>rds.map {|v| v[:student_id]}.uniq).to_hash(:id, :name)
@@ -272,6 +284,7 @@ get '/assessment/:id/duplicate' do |id|
   @user=User[session["user_id"]]
   @assessment=Assessment[id]
   raise Coeval::NoAssessmentIdError, id unless @assessment
+  halt 403 if course_assistant_for_assessment?(@assessment, session['user_id'])
 
   @criteria_hash=@assessment.criteria_hash
 
@@ -284,6 +297,7 @@ post '/assessment/:id/duplicate' do |id|
   original_assessment_id=params['origin_id']
   @assessment=Assessment[original_assessment_id]
   raise Coeval::NoAssessmentIdError, original_assessment_id unless @assessment
+  halt 403 if course_assistant_for_assessment?(@assessment, session['user_id'])
 
   @criteria_hash=@assessment.criteria_hash
   datetime_values=assessment_datetime_values(params)
@@ -341,6 +355,7 @@ post '/assessment/:id/edit' do |id|
   @user=User[session["user_id"]]
   @assessment=Assessment[id]
   raise Coeval::NoAssessmentIdError, id unless @assessment
+  halt 403 if course_assistant_for_assessment?(@assessment, session['user_id'])
 
   datetime_values=assessment_datetime_values(params)
   halt_invalid_assessment_datetime_order(datetime_values)
@@ -383,10 +398,11 @@ get '/assessment/:id/check_open_ended_responses' do |id|
   @assessment=Assessment[id]
   raise Coeval::NoAssessmentIdError, id unless @assessment
   assistant_team_ids=assistant_team_ids_for(@assessment, session['user_id'])
-  halt 403 unless auth_to('assessment_admin') || (auth_to('assessment_view') && assistant_team_ids.any?)
+  course_assistant=course_assistant_for_assessment?(@assessment, session['user_id'])
+  halt 403 unless (auth_to('assessment_admin') && !course_assistant) || (auth_to('assessment_view') && assistant_team_ids.any?)
 
   @open_ended=@assessment.open_ended_responses
-  @open_ended=@open_ended.where(team_id:assistant_team_ids) unless auth_to('assessment_admin')
+  @open_ended=@open_ended.where(team_id:assistant_team_ids) if course_assistant || !auth_to('assessment_admin')
   @open_ended=@open_ended.order_by(:team_id, :criterion_id, :student_from, :student_to)
   #@gs=Coeval::GradingSystem.new(@assessment)
   haml "assessments/check_open_ended_responses".to_sym, escape_html: false
@@ -397,9 +413,10 @@ post '/assessment/:id/check_open_ended_responses' do |id|
   @assessment=Assessment[id]
   raise Coeval::NoAssessmentIdError, id unless @assessment
   assistant_team_ids=assistant_team_ids_for(@assessment, session['user_id'])
-  halt 403 unless auth_to('assessment_admin') || (auth_to('assessment_view') && assistant_team_ids.any?)
+  course_assistant=course_assistant_for_assessment?(@assessment, session['user_id'])
+  halt 403 unless (auth_to('assessment_admin') && !course_assistant) || (auth_to('assessment_view') && assistant_team_ids.any?)
   allowed_response_ids=nil
-  unless auth_to('assessment_admin')
+  if course_assistant || !auth_to('assessment_admin')
     allowed_response_ids=@assessment.open_ended_responses.where(team_id:assistant_team_ids).map(:ass_id)
   end
   @result=Result.new
@@ -426,7 +443,7 @@ post '/assessment/:id/check_open_ended_responses' do |id|
   end
   add_result(@result)
   @open_ended=@assessment.open_ended_responses
-  @open_ended=@open_ended.where(team_id:assistant_team_ids) unless auth_to('assessment_admin')
+  @open_ended=@open_ended.where(team_id:assistant_team_ids) if course_assistant || !auth_to('assessment_admin')
   @open_ended=@open_ended.order_by(:team_id, :criterion_id, :student_from, :student_to)
   haml "assessments/check_open_ended_responses".to_sym, escape_html: false
 end

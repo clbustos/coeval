@@ -33,7 +33,7 @@
     %span{:class=>"titulo"}=t(:Grade_parameter_2)
     =@assessment[:grade_parameter_2]
 
-- if auth_to('assessment_admin')
+- if auth_to('assessment_admin') && !@assistant_assessment_access
   .btn-group{role:'group'}
     %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/edit")}
       =t(:Edit)

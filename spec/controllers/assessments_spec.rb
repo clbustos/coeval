@@ -193,4 +193,38 @@ RSpec.describe 'Assessments controller' do
       expect(last_response.status).to eq(403)
     end
   end
+
+  describe 'assistant with an administrative teacher role' do
+    it 'cannot edit, assign teachers, duplicate, or delete the assessment' do
+      scenario=create_course_scenario
+      administrative_assistant=create_user(
+        login:'administrative_assistant',
+        role_id:'teacher',
+        name:'Administrative Assistant'
+      )
+      AssistantTeacher.create(course_id:scenario[:course][:id], teacher_id:administrative_assistant[:id])
+      Team.create(
+        name:'Administrative Assistant Team',
+        assessment_id:scenario[:assessment][:id],
+        teacher_id:administrative_assistant[:id]
+      )
+      login_as(administrative_assistant)
+
+      get "/assessment/#{scenario[:assessment][:id]}"
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).not_to include("/assessment/#{scenario[:assessment][:id]}/edit")
+      expect(last_response.body).not_to include("/assessment/#{scenario[:assessment][:id]}/teacher_assignation")
+      expect(last_response.body).not_to include("/assessment/#{scenario[:assessment][:id]}/duplicate")
+      expect(last_response.body).not_to include("/assessment/#{scenario[:assessment][:id]}/delete")
+
+      get "/assessment/#{scenario[:assessment][:id]}/edit"
+      expect(last_response.status).to eq(403)
+      get "/assessment/#{scenario[:assessment][:id]}/teacher_assignation"
+      expect(last_response.status).to eq(403)
+      get "/assessment/#{scenario[:assessment][:id]}/duplicate"
+      expect(last_response.status).to eq(403)
+      get "/assessment/#{scenario[:assessment][:id]}/delete"
+      expect(last_response.status).to eq(403)
+    end
+  end
 end
