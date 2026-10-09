@@ -2,10 +2,15 @@
 
 require 'rake'
 require 'rspec/core/rake_task'
+require 'dotenv'
+
+Dotenv.load(File.expand_path('.env', __dir__))
 
 namespace :db do
   desc 'Migrate the database to the latest schema version'
   task :migrate do
+    abort 'DATABASE_URL is not configured. Add it to the project .env file.' if ENV['DATABASE_URL'].to_s.strip.empty?
+
     require_relative 'model/init'
     require_relative 'lib/coeval/create_schema'
 
