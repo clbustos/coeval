@@ -1,0 +1,43 @@
+.heading=title(t(:Course_excel_import_export))
+%ul.breadcrumb
+  %li
+    %a{:href=>url('/courses')}=t(:Courses)
+  %li
+    %a{:href=>url("/course/#{@course[:id]}")}=@course[:name]
+  %li.active=t(:Course_excel_import_export)
+
+%h3=t("users_admin.excel_export").to_sym
+%p=t(:Course_excel_export_help)
+.btn-group
+  %a.btn.btn-default{:href=>url("/course/#{@course[:id]}/users_batch_edition/excel_export")}
+    %span.glyphicon.glyphicon-export
+    =t("users_admin.excel_export").to_sym
+
+%h3=t("users_admin.excel_import").to_sym
+%p=t(:Course_excel_import_help)
+%dl.dl-horizontal
+  %dt email
+  %dd=t(:Course_excel_field_email)
+  %dt name
+  %dd=t(:Course_excel_field_name)
+  %dt language
+  %dd=t(:Course_excel_field_language)
+  %dt password
+  %dd=t(:Course_excel_field_password)
+  %dt login
+  %dd=t(:Course_excel_field_login)
+  %dt assessment
+  %dd=t(:Course_excel_field_assessment)
+  %dt team
+  %dd=t(:Course_excel_field_team)
+  %dt assistant_teacher
+  %dd=t(:Course_excel_field_assistant_teacher)
+
+%form{:method=>:post, :action=>url('/course/excel_import'), :enctype=>'multipart/form-data'}
+  %input{type:'hidden', name:'course_id', value:@course[:id]}
+  .form-group
+    %label{:for=>'course_excel_file'}
+      %span.glyphicon.glyphicon-import
+      =t(:File)
+    %input{:type=>'file', :id=>'course_excel_file', :name=>'file', :required=>true}
+  %input{:type=>:submit, :class=>'btn btn-primary', :value=>t(:Send)}

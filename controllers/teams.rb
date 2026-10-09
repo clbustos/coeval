@@ -10,7 +10,7 @@
 
 
 get '/teams' do
-  halt 403 unless (auth_to('assessment_view'))
+  halt 403 unless auth_to('assessment_admin')
 
   @teams=Team.order(:assessment_id, :name)
 
@@ -18,7 +18,7 @@ get '/teams' do
 end
 
 get '/team/:id' do |id|
-  halt 403 unless (auth_to('assessment_view'))
+  halt 403 unless auth_to('assessment_admin')
   @user=User[session["user_id"]]
   @team=Team[id]
   @user_names=@team.users.to_hash(:id, :name)
@@ -33,7 +33,7 @@ get '/team/:id' do |id|
 end
 
 get '/team/:id/student/:student_id' do |id, student_id|
-  halt 403 unless (auth_to('assessment_view'))
+  halt 403 unless auth_to('assessment_admin')
   @user=User[session["user_id"]]
   @team=Team[id]
   @user_names=@team.users.to_hash(:id, :name)

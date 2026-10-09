@@ -41,10 +41,18 @@
       =t(:Check_open_ended_responses)
     %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/export_excel")}
       =t(:Export_to_Excel)
+    %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/teacher_assignation")}
+      =t(:Assign_teams_to_teacher)
     %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/duplicate")}
       =t(:Duplicate)
     %a.btn.btn-warning{:href=>url("/assessment/#{@assessment[:id]}/delete")}
       =t(:Delete)
+- elsif @assistant_assessment_access && @assistant_assigned_team_ids.any?
+  .btn-group{role:'group'}
+    %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/check_open_ended_responses")}
+      =t(:Check_open_ended_responses)
+    %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/export_excel")}
+      =t(:Export_to_Excel)
 
 %p
 - if auth_to('assessment_view')
@@ -54,16 +62,21 @@
       %table.table
         %thead
           %th=t(:Team)
+          %th=t(:Teacher)
           %th=t(:Members)
           %th=t(:Responses)
           %th=t(:Completion)
           %th=t(:Average_response_partial)
           %th=t(:Average_response)
         %tbody
-        - @assessment.teams_completation_rate.each_pair do |team_id,team_data|
+        - @teams_summary.each_pair do |team_id,team_data|
           %tr
             %td
-              %a{:href=>url("/team/#{team_id}")}=team_data[:team_name]
+              - if @assistant_assessment_access
+                =team_data[:team_name]
+              - else
+                %a{:href=>url("/team/#{team_id}")}=team_data[:team_name]
+            %td=team_data[:teacher_name]
             %td=team_data[:n_students]
             %td=team_data[:n_responses]
             %td=team_data[:perc_complete].to_i

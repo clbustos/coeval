@@ -19,6 +19,69 @@ RSpec.describe 'Assessments controller' do
     }.merge(overrides)
   end
 
+  describe 'GET /assessment/:id' do
+    it 'shows the assigned teacher for every team' do
+      scenario = create_course_scenario
+      Team.create(
+        name: 'Team with teacher',
+        assessment_id: scenario[:assessment][:id],
+        teacher_id: scenario[:assistant][:id]
+      )
+      login_as(scenario[:teacher])
+
+      get "/assessment/#{scenario[:assessment][:id]}"
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include('Team with teacher')
+      expect(last_response.body).to include('Assistant')
+    end
+  end
+
+  describe 'teacher assignation' do
+    it 'shows teams with their assigned teacher and the available teachers' do
+      scenario = create_course_scenario
+      AssistantTeacher.create(course_id:scenario[:course][:id], teacher_id:scenario[:assistant][:id])
+      login_as(scenario[:teacher])
+
+      get "/assessment/#{scenario[:assessment][:id]}/teacher_assignation"
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include('Team A')
+      expect(last_response.body).to include('Teacher')
+      expect(last_response.body).to include('Assistant')
+      expect(last_response.body).to include("name='team_ids[]'")
+      expect(last_response.body).to include("<select class='form-control' id='teacher_id' name='teacher_id' required>")
+    end
+
+    it 'assigns the selected teams to a teacher' do
+      scenario = create_course_scenario
+      second_team=Team.create(name:'Team B', assessment_id:scenario[:assessment][:id], teacher_id:scenario[:teacher][:id])
+      AssistantTeacher.create(course_id:scenario[:course][:id], teacher_id:scenario[:assistant][:id])
+      login_as(scenario[:teacher])
+
+      post "/assessment/#{scenario[:assessment][:id]}/teacher_assignation",
+           team_ids:[scenario[:team][:id], second_team[:id]],
+           teacher_id:scenario[:assistant][:id]
+
+      expect(last_response).to be_redirect
+      expect(Team[scenario[:team][:id]][:teacher_id]).to eq(scenario[:assistant][:id])
+      expect(Team[second_team[:id]][:teacher_id]).to eq(scenario[:assistant][:id])
+    end
+
+    it 'shows an error when no teams are selected' do
+      scenario = create_course_scenario
+      login_as(scenario[:teacher])
+
+      post "/assessment/#{scenario[:assessment][:id]}/teacher_assignation",
+           teacher_id:scenario[:teacher][:id]
+      follow_redirect!
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include('No teams selected')
+      expect(Team[scenario[:team][:id]][:teacher_id]).to eq(scenario[:teacher][:id])
+    end
+  end
+
   describe 'POST /assessment/:id/edit' do
     it 'updates ordered dates and allows dates without a fixed value' do
       scenario = create_course_scenario
@@ -83,6 +146,51 @@ RSpec.describe 'Assessments controller' do
 
       expect(last_response.status).to eq(200)
       expect(last_response.content_type).to include('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    end
+  end
+
+  describe 'assistant teacher assessment access' do
+    before do
+      @scenario=create_course_scenario
+      AssistantTeacher.create(course_id:@scenario[:course][:id], teacher_id:@scenario[:assistant][:id])
+      @assistant_team=Team.create(
+        name:'Assistant Team',
+        assessment_id:@scenario[:assessment][:id],
+        teacher_id:@scenario[:assistant][:id]
+      )
+      StudentTeam.create(team_id:@assistant_team[:id], student_id:@scenario[:student][:id])
+      login_as(@scenario[:assistant])
+    end
+
+    it 'shows only assigned groups and the two permitted actions' do
+      get "/assessment/#{@scenario[:assessment][:id]}"
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include('Assistant Team')
+      expect(last_response.body).not_to include('Team A')
+      expect(last_response.body).to include("/assessment/#{@scenario[:assessment][:id]}/check_open_ended_responses")
+      expect(last_response.body).to include("/assessment/#{@scenario[:assessment][:id]}/export_excel")
+      expect(last_response.body).not_to include("/assessment/#{@scenario[:assessment][:id]}/edit")
+      expect(last_response.body).not_to include("/assessment/#{@scenario[:assessment][:id]}/teacher_assignation")
+    end
+
+    it 'allows open-response review and Excel export' do
+      get "/assessment/#{@scenario[:assessment][:id]}/check_open_ended_responses"
+      expect(last_response.status).to eq(200)
+
+      get "/assessment/#{@scenario[:assessment][:id]}/export_excel"
+      expect(last_response.status).to eq(200)
+    end
+
+    it 'denies administrative and team-detail actions' do
+      get "/assessment/#{@scenario[:assessment][:id]}/edit"
+      expect(last_response.status).to eq(403)
+
+      get "/assessment/#{@scenario[:assessment][:id]}/teacher_assignation"
+      expect(last_response.status).to eq(403)
+
+      get "/team/#{@assistant_team[:id]}"
+      expect(last_response.status).to eq(403)
     end
   end
 end

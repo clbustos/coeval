@@ -45,11 +45,27 @@ def excel_grade(grading_system, value)
   grading_system.grade(value) || '--'
 end
 
+def assistant_team_ids_for(assessment, user_id)
+  assigned=AssistantTeacher[course_id:assessment[:course_id], teacher_id:user_id]
+  return [] unless assigned && assessment.course[:active]
+
+  Team.where(assessment_id:assessment[:id], teacher_id:user_id).map(:id)
+end
+
+def assistant_can_access_assessment?(assessment, user_id)
+  !AssistantTeacher[course_id:assessment[:course_id], teacher_id:user_id].nil? && assessment.course[:active]
+end
+
 
 get '/assessments' do
   halt 403 unless (auth_to('assessment_view'))
 
   @assessments=Assessment.order(:course_id, :name)
+  unless auth_to('assessment_admin')
+    assigned_course_ids=AssistantTeacher.where(teacher_id:session['user_id']).map(:course_id)
+    active_course_ids=Course.where(id:assigned_course_ids, active:true).map(:id)
+    @assessments=@assessments.where(course_id:active_course_ids)
+  end
   @courses_h=Course.order(:active, :name).to_hash(:id, :name)
 
   haml :assessments, escape_html: false
@@ -87,7 +103,16 @@ get '/assessment/:id' do |id|
   @user=User[session["user_id"]]
   @assessment=Assessment[id]
   raise Coeval::NoAssessmentIdError, id unless @assessment
+  @assistant_assessment_access=auth_to('assessment_view') && !auth_to('assessment_admin')
+  if @assistant_assessment_access
+    halt 403 unless assistant_can_access_assessment?(@assessment, session['user_id'])
+  end
   @gs=Coeval::GradingSystem.new(@assessment)
+  @teams_summary=@assessment.teams_completation_rate
+  if @assistant_assessment_access
+    @assistant_assigned_team_ids=assistant_team_ids_for(@assessment, session['user_id'])
+    @teams_summary.select! {|team_id, _team_data| @assistant_assigned_team_ids.include?(team_id)}
+  end
   if auth_to('assessment_admin')
     @course_students=@assessment.course.students.order(:name)
     @teams_for_assignment=@assessment.teams.order(:name)
@@ -99,6 +124,45 @@ get '/assessment/:id' do |id|
                       .inject({}) {|ac,row| ac[row[:student_id]]=row[:team_id]; ac}
   end
   haml "assessments/view".to_sym, escape_html: false
+end
+
+get '/assessment/:id/teacher_assignation' do |id|
+  halt 403 unless auth_to('assessment_admin')
+  @assessment=Assessment[id]
+  raise Coeval::NoAssessmentIdError, id unless @assessment
+
+  @teams=@assessment.teams.order(:name)
+  course=@assessment.course
+  teacher_ids=[course[:teacher_id]] + course.assistant_teachers.map(:id)
+  @teachers=User.where(id:teacher_ids.uniq).order(:name)
+  haml 'assessments/teacher_assignation'.to_sym, escape_html: false
+end
+
+post '/assessment/:id/teacher_assignation' do |id|
+  halt 403 unless auth_to('assessment_admin')
+  assessment=Assessment[id]
+  raise Coeval::NoAssessmentIdError, id unless assessment
+
+  team_ids=Array(params['team_ids']).map(&:to_i).uniq
+  if team_ids.empty?
+    add_message(t(:No_teams_selected), :error)
+    redirect url("/assessment/#{assessment[:id]}/teacher_assignation")
+  end
+
+  teacher_id=params['teacher_id'].to_i
+  course=assessment.course
+  allowed_teacher_ids=([course[:teacher_id]] + course.assistant_teachers.map(:id)).map(&:to_i)
+  unless allowed_teacher_ids.include?(teacher_id)
+    add_message(t(:No_teacher_selected), :error)
+    redirect url("/assessment/#{assessment[:id]}/teacher_assignation")
+  end
+
+  teams=assessment.teams.where(id:team_ids)
+  halt 403 unless teams.count==team_ids.length
+
+  teams.update(teacher_id:teacher_id)
+  add_message(t(:Teams_assigned_to_teacher, count:team_ids.length, teacher_name:User[teacher_id][:name]))
+  redirect url("/assessment/#{assessment[:id]}/teacher_assignation")
 end
 
 post '/assessment/:id/teams' do |id|
@@ -148,7 +212,7 @@ post '/assessment/:id/student_teams' do |id|
 end
 
 get '/assessment/:id/edit' do |id|
-  halt 403 unless auth_to('assessment_view')
+  halt 403 unless auth_to('assessment_admin')
   @user=User[session["user_id"]]
   @assessment=Assessment[id]
   @criteria_hash=@assessment.criteria_hash
@@ -158,11 +222,15 @@ end
 get '/assessment/:id/export_excel' do |id|
   require 'caxlsx'
 
-  halt 403 unless auth_to('assessment_admin')
   @user=User[session["user_id"]]
   @assessment=Assessment[id]
+  raise Coeval::NoAssessmentIdError, id unless @assessment
+  assistant_team_ids=assistant_team_ids_for(@assessment, session['user_id'])
+  halt 403 unless auth_to('assessment_admin') || (auth_to('assessment_view') && assistant_team_ids.any?)
   @gs=Coeval::GradingSystem.new(@assessment)
-  rds=@assessment.response_detail_student.all
+  response_details=@assessment.response_detail_student
+  response_details=response_details.where(team_id:assistant_team_ids) unless auth_to('assessment_admin')
+  rds=response_details.all
   teams=Team.where(:id=>rds.map {|v| v[:team_id]}.uniq).to_hash(:id, :name)
   students=User.where(:id=>rds.map {|v| v[:student_id]}.uniq).to_hash(:id, :name)
   @package = Axlsx::Package.new
@@ -269,7 +337,7 @@ end
 
 
 post '/assessment/:id/edit' do |id|
-  halt 403 unless auth_to('assessment_view')
+  halt 403 unless auth_to('assessment_admin')
   @user=User[session["user_id"]]
   @assessment=Assessment[id]
   raise Coeval::NoAssessmentIdError, id unless @assessment
@@ -311,25 +379,37 @@ end
 
 
 get '/assessment/:id/check_open_ended_responses' do |id|
-  halt 403 unless auth_to('assessment_admin')
   @user=User[session["user_id"]]
   @assessment=Assessment[id]
+  raise Coeval::NoAssessmentIdError, id unless @assessment
+  assistant_team_ids=assistant_team_ids_for(@assessment, session['user_id'])
+  halt 403 unless auth_to('assessment_admin') || (auth_to('assessment_view') && assistant_team_ids.any?)
 
-  @open_ended=@assessment.open_ended_responses.order_by(:team_id, :criterion_id, :student_from, :student_to )
+  @open_ended=@assessment.open_ended_responses
+  @open_ended=@open_ended.where(team_id:assistant_team_ids) unless auth_to('assessment_admin')
+  @open_ended=@open_ended.order_by(:team_id, :criterion_id, :student_from, :student_to)
   #@gs=Coeval::GradingSystem.new(@assessment)
   haml "assessments/check_open_ended_responses".to_sym, escape_html: false
 end
 
 post '/assessment/:id/check_open_ended_responses' do |id|
-  halt 403 unless auth_to('assessment_admin')
   @user=User[session["user_id"]]
   @assessment=Assessment[id]
+  raise Coeval::NoAssessmentIdError, id unless @assessment
+  assistant_team_ids=assistant_team_ids_for(@assessment, session['user_id'])
+  halt 403 unless auth_to('assessment_admin') || (auth_to('assessment_view') && assistant_team_ids.any?)
+  allowed_response_ids=nil
+  unless auth_to('assessment_admin')
+    allowed_response_ids=@assessment.open_ended_responses.where(team_id:assistant_team_ids).map(:ass_id)
+  end
   @result=Result.new
-  params["response_total"].each_pair do |criterion, values_total|
+  params.fetch("response_total", {}).each_pair do |criterion, values_total|
+    values_total=values_total.select {|response_id| allowed_response_ids.include?(response_id.to_i)} if allowed_response_ids
     values_to_omit=[]
     if params['response'] and params['response'][criterion]
       values_to_omit=params['response'][criterion].keys
     end
+    values_to_omit=values_to_omit.select {|response_id| allowed_response_ids.include?(response_id.to_i)} if allowed_response_ids
     values_to_maintain=values_total-values_to_omit
       $db.transaction do
         if values_to_maintain.length>0
@@ -345,7 +425,9 @@ post '/assessment/:id/check_open_ended_responses' do |id|
       end
   end
   add_result(@result)
-  @open_ended=@assessment.open_ended_responses.order_by(:team_id, :criterion_id, :student_from, :student_to )
+  @open_ended=@assessment.open_ended_responses
+  @open_ended=@open_ended.where(team_id:assistant_team_ids) unless auth_to('assessment_admin')
+  @open_ended=@open_ended.order_by(:team_id, :criterion_id, :student_from, :student_to)
   haml "assessments/check_open_ended_responses".to_sym, escape_html: false
 end
 

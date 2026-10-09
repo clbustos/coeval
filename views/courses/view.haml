@@ -33,7 +33,11 @@
 
 
 %h3=t(:Assessments)
-
+- if auth_to('assessment_admin')
+  .btn-group.btn-group-sm
+    %a.btn.btn-default{:href=>url("/course/#{@course[:id]}/assessment/new")}
+      %span.glyphicon.glyphicon-plus
+      =t(:New_assessment)
 - if @course.assessments.count>0
   %ul
     - @course.assessments.each do |assessment|
@@ -48,53 +52,52 @@
   %p
     %em=t(:No_assessments)
 
-- if auth_to("assessment_admin")
-  %h4=t(:New_assessment)
-  %form.form-inline{method:'post', action:url("/course/#{@course[:id]}/assessments")}
-    .form-group
-      %label=t(:Name)
-      %input.form-control{type:'text', name:'name', required:true}
-    .form-group
-      %label=t(:Description)
-      %input.form-control{type:'text', name:'description'}
-    .form-group
-      %label=t(:Grade_system)
-      %input.form-control{type:'text', name:'grade_system', value:'chilean'}
-    .form-group
-      %label=t(:Grade_parameter_1)
-      %input.form-control{type:'number', name:'grade_parameter_1', value:60}
-    .checkbox
-      %label
-        %input{type:'checkbox', name:'active', checked:true}
-        =t(:Active)
-    %button.btn.btn-primary{type:'submit'}=t(:Create)
-
 - if auth_to("course_view")
-  %h3=t(:Students)
-  %p=t(:Student_number, number:@students.count)
-  %ul.list_group
-    -@students.each do |student|
-      %li=student[:name]
+  - unless @assistant_course_access
+    %h3=t(:Students)
+    %p=t(:Student_number, number:@students.count)
+    %ul.list_group
+      -@students.each do |student|
+        %li=student[:name]
   %h3=t(:Students_groups)
-  - sg=@course.students_groups
-  - if sg.count>0
-    %ul.list-group
-      - @course.students.each do |student|
-        %li.list-group-item
-          = student[:name]
-          - student_teams=sg[student[:id]]
-          - if student_teams
-            %ul
-              - student_teams.each do |st|
-                %li
-                  ="<strong>#{t(:Assessment)}</strong>"
-                  %a{href:url("/assessment/#{st[:assessment_id]}")}=@assessments[st[:assessment_id]]
-                  ="<strong>#{t(:Team)}</strong>"
-                  %a{href:url("/team/#{st[:team_id]}")}=@teams[st[:team_id]]
-                  %a{href:url("/team/#{st[:team_id]}/student/#{student[:id]}")}="<strong>#{t(:Detail)}</strong>"
+  - if @course_assessments.any?
+    - @course_assessments.each do |assessment|
+      .panel.panel-default
+        .panel-heading
+          %h4.panel-title
+            %a{:href=>url("/assessment/#{assessment[:id]}")}=assessment[:name]
+        .panel-body
+          - teams=@teams_by_assessment[assessment[:id]]
+          - if teams.any?
+            - teams.each do |team_data|
+              %section
+                %h5
+                  - if @assistant_course_access
+                    =team_data[:team][:name]
+                  - else
+                    %a{:href=>url("/team/#{team_data[:team][:id]}")}=team_data[:team][:name]
+                %p
+                  %strong="#{t(:Teacher)}:"
+                  =team_data[:teacher][:name]
+                %p
+                  %strong="#{t(:Members)}:"
+                - if team_data[:members].any?
+                  %ul
+                    - team_data[:members].each do |student|
+                      %li
+                        - if @assistant_course_access
+                          =student[:name]
+                        - else
+                          %a{:href=>url("/team/#{team_data[:team][:id]}/student/#{student[:id]}")}=student[:name]
+                - else
+                  %p
+                    %em=t(:No_team_members)
+          - else
+            %p
+              %em=t(:No_teams)
   - else
     %p
-      %em=t(:No_student_groups)
+      %em=t(:No_assessments)
 
 - if auth_to("course_admin")
   %h4=t(:Add_student_to_course)
@@ -123,23 +126,6 @@
     - else
       %p
         %em=t(:No_students_found)
-
-  %h4=t("users_admin.excel_export").to_sym
-  .btn-group
-    %a.btn.btn-sm.btn-default{:href=>"/course/#{@course[:id]}/users_batch_edition/excel_export"}
-      %span.glyphicon.glyphicon.glyphicon-export
-      =t("users_admin.excel_export").to_sym
-  %h4=t("users_admin.excel_import").to_sym
-
-  %form{:method=>:post, :action=>url("/course/excel_import"), :enctype=>'multipart/form-data'}
-    %input{type: "hidden", name:"course_id", value:@course[:id]}
-    .form-group
-      %label
-        %span.glyphicon.glyphicon.glyphicon-import
-        =t(:File)
-      %input{:type=>'file', :name=>'file', :multiple=>"multiple"}
-      %input{type:'hidden', name:'course_id', value:@course[:id]}
-    %input{:type=>:submit, :class=>"btn btn-primary",:value=>t(:Send)}
 
   %div{:class=>"list-group-item"}
     %h4{:class=>"list-group-item-heading"}=t(:Actions)

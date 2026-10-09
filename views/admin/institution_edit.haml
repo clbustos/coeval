@@ -1,0 +1,9 @@
+%h2=title(@institution.new? ? t(:Institution_new) : t(:Institution_name, institution_name:@institution.name))
+
+%form{:method=>:post, :action=>url('/institution/update')}
+  - unless @institution.new?
+    %input{:type=>'hidden', :name=>'institution_id', :value=>@institution.id}
+  .form-group
+    %label{:for=>'name'}=t(:Name)
+    %input.form-control{:type=>'text', :id=>'name', :name=>'name', :value=>@institution.name, :required=>true, :autofocus=>true}
+  %input.btn.btn-default{:type=>:submit, :value=>t(:Update)}

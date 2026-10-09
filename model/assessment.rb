@@ -85,21 +85,27 @@ ORDER BY student_to, criterion_id) AS t GROUP BY student_id ", self[:id]]
 
   # For each team, retrieve the completion rate of their members
   def teams_completation_rate
-    $db["SELECT team_id, t_name as team_name, COUNT(DISTINCT(student_from)) as n_students,
-COUNT(DISTINCT(ass_id)) as n_responses,
-AVG(CASE WHEN saved = 1 THEN 1 ELSE 0 END)*100 AS perc_complete,
+    $db["SELECT t.id as team_id, t.name as team_name, u.name as teacher_name,
+COUNT(DISTINCT(st.student_id)) as n_students,
+COUNT(DISTINCT(arr.ass_id)) as n_responses,
+AVG(CASE WHEN arr.ass_id IS NULL THEN NULL WHEN arr.saved = 1 THEN 1 ELSE 0 END)*100 AS perc_complete,
 AVG(CASE
-        WHEN criterion_type = 'open_ended' THEN NULL
-        ELSE (response_value-min_points)/(max_points-min_points)
+        WHEN arr.criterion_type = 'open_ended' THEN NULL
+        ELSE (arr.response_value-arr.min_points)/(arr.max_points-arr.min_points)
     END) AS response_avg_partial,
 AVG(CASE
-        WHEN criterion_type = 'open_ended' THEN NULL
-        WHEN response_value IS NULL THEN 0
-        ELSE (response_value-min_points)/(max_points-min_points)
+        WHEN arr.ass_id IS NULL OR arr.criterion_type = 'open_ended' THEN NULL
+        WHEN arr.response_value IS NULL THEN 0
+        ELSE (arr.response_value-arr.min_points)/(arr.max_points-arr.min_points)
     END) AS response_avg
 
-FROM assessments_results_raw
-WHERE assessment_id=? GROUP BY team_id order by t_name", self[:id]].to_hash(:team_id)
+FROM teams t
+INNER JOIN users u ON u.id=t.teacher_id
+LEFT JOIN student_teams st ON st.team_id=t.id
+LEFT JOIN assessments_results_raw arr ON arr.team_id=t.id
+WHERE t.assessment_id=?
+GROUP BY t.id, t.name, u.name
+ORDER BY t.name", self[:id]].to_hash(:team_id)
 
 
 

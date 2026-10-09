@@ -1,0 +1,39 @@
+.heading=title(t(:Assign_teams_to_teacher))
+%ul.breadcrumb
+  %li
+    %a{:href=>url('/courses')}=t(:Courses)
+  %li
+    %a{:href=>url("/course/#{@assessment[:course_id]}")}=@assessment.course_name
+  %li
+    %a{:href=>url("/assessment/#{@assessment[:id]}")}=@assessment[:name]
+  %li.active=t(:Assign_teams_to_teacher)
+
+- if @teams.empty?
+  %p
+    %em=t(:No_teams)
+- else
+  %form{:method=>:post, :action=>url("/assessment/#{@assessment[:id]}/teacher_assignation")}
+    %table.table.table-bordered
+      %thead
+        %tr
+          %th=t(:Select)
+          %th=t(:Team)
+          %th=t(:Teacher)
+      %tbody
+        - @teams.each do |team|
+          - assigned_teacher=User[team[:teacher_id]]
+          %tr
+            %td
+              %input{:type=>'checkbox', :name=>'team_ids[]', :value=>team[:id]}
+            %td
+              %a{:href=>url("/team/#{team[:id]}")}=team[:name]
+            %td=assigned_teacher[:name]
+
+    .form-group
+      %label{:for=>'teacher_id'}=t(:Select_teacher)
+      %select.form-control{:id=>'teacher_id', :name=>'teacher_id', :required=>true}
+        %option{:value=>''}=t(:Select_teacher)
+        - @teachers.each do |teacher|
+          %option{:value=>teacher[:id]}=teacher[:name]
+
+    %button.btn.btn-primary{:type=>'submit'}=t(:Save)

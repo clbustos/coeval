@@ -44,9 +44,27 @@ get '/course/:id' do |id|
 
   @course=Course[id]
   raise Coeval::NoCourseIdError, id unless @course
-  @assessments=Assessment.where(course_id:id).as_hash(:id, :name)
+  @assistant_course_access=auth_to('course_view') && !auth_to('course_admin')
+  if @assistant_course_access
+    assigned=AssistantTeacher[course_id:@course[:id], teacher_id:session['user_id']]
+    halt 403 unless assigned && @course[:active]
+  end
+  @course_assessments=Assessment.where(course_id:id).order(:name).all
+  @assessments=@course_assessments.to_h {|assessment| [assessment[:id], assessment[:name]]}
   @students = @course.students
   @teams=Team.where(assessment_id: @assessments.keys).as_hash(:id, :name)
+  @teams_by_assessment=@course_assessments.to_h do |assessment|
+    teams=Team.where(assessment_id:assessment[:id])
+    teams=teams.where(teacher_id:session['user_id']) if @assistant_course_access
+    teams=teams.order(:name).map do |team|
+      {
+        team:team,
+        teacher:User[team[:teacher_id]],
+        members:team.users.order(:name).all
+      }
+    end
+    [assessment[:id], teams]
+  end
   @current_assistant_teachers=@course.assistant_teachers
   @student_search=params['student_search'].to_s.strip
   if auth_to('course_admin') and @student_search.length>0
@@ -86,6 +104,22 @@ get '/course/:id/assessments' do |id|
 
   @assessments=Assessment.where(course_id:@course[:id]).order(:name)
   haml "courses/assessments".to_sym, escape_html: false
+end
+
+get '/course/:id/assessment/new' do |id|
+  halt 403 unless auth_to('assessment_admin')
+  @course=Course[id]
+  raise Coeval::NoCourseIdError, id unless @course
+
+  haml 'courses/assessment_new'.to_sym, escape_html: false
+end
+
+get '/course/:id/excel' do |id|
+  halt 403 unless auth_to('course_admin')
+  @course=Course[id]
+  raise Coeval::NoCourseIdError, id unless @course
+
+  haml 'courses/excel'.to_sym, escape_html: false
 end
 
 post '/course/:id/assessments' do |id|
@@ -240,8 +274,12 @@ get '/course/:id/users_batch_edition/excel_export' do |id|
 
   #institutions=Institution.to_hash(:id,:name)
   wb.add_worksheet(:name => t(:Users)) do |sheet|
-    header=["login", "email", "language", "name"]
-    sheet.add_row header, :style=> [blue_cell]*9
+    header = if users.empty?
+      ["login", "email", "language", "name", "password", "assessment", "team", "assistant_teacher"]
+    else
+      ["login", "email", "language", "name"]
+    end
+    sheet.add_row header, :style=> [blue_cell]*header.length
     users.each do |user|
       row=[user[:login], user[:email], user[:language], user[:name]]
       sheet.add_row row
@@ -257,6 +295,7 @@ end
 
 
 post '/course/excel_import' do
+  halt 403 unless auth_to('course_admin')
   require 'simple_xlsx_reader'
   SimpleXlsxReader.configuration.auto_slurp = true
   archivo=params.delete("file")
@@ -274,7 +313,7 @@ post '/course/excel_import' do
   id_password     = header.find_index("password")
   id_team        = header.find_index("team")
   id_assessment  = header.find_index("assessment")
-  id_assistant_teacher = header.find_index("assisstant_teacher")
+  id_assistant_teacher = header.find_index("assistant_teacher")
 
   result=Result.new
 

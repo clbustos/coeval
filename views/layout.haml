@@ -64,6 +64,9 @@
                     %ul.dropdown-menu
                       %li<
                         %a{:class=>'dropdown-item', :href=>url('/admin/users')}=t(:Users)
+                      -if auth_to('user_admin')
+                        %li<
+                          %a{:class=>'dropdown-item', :href=>url('/admin/institutions')}=t(:Institutions)
                       %li<
                         %a{:class=>'dropdown-item', :href=>url('/admin/groups')}=t(:Groups)
                       %li<

@@ -1,0 +1,26 @@
+.heading=title(t(:New_assessment))
+%ul.breadcrumb
+  %li
+    %a{:href=>url('/courses')}=t(:Courses)
+  %li
+    %a{:href=>url("/course/#{@course[:id]}")}=@course[:name]
+  %li.active=t(:New_assessment)
+
+%form{method:'post', action:url("/course/#{@course[:id]}/assessments")}
+  .form-group
+    %label{:for=>'name'}=t(:Name)
+    %input.form-control{type:'text', id:'name', name:'name', required:true, autofocus:true}
+  .form-group
+    %label{:for=>'description'}=t(:Description)
+    %input.form-control{type:'text', id:'description', name:'description'}
+  .form-group
+    %label{:for=>'grade_system'}=t(:Grade_system)
+    %input.form-control{type:'text', id:'grade_system', name:'grade_system', value:'chilean'}
+  .form-group
+    %label{:for=>'grade_parameter_1'}=t(:Grade_parameter_1)
+    %input.form-control{type:'number', id:'grade_parameter_1', name:'grade_parameter_1', value:60}
+  .checkbox
+    %label
+      %input{type:'checkbox', name:'active', checked:true}
+      =t(:Active)
+  %button.btn.btn-primary{type:'submit'}=t(:Create)

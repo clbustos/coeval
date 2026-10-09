@@ -42,6 +42,13 @@ RSpec.describe 'Dashboard' do
     it 'shows active courses assigned to an assistant teacher' do
       scenario = create_course_scenario
       AssistantTeacher.create(course_id: scenario[:course][:id], teacher_id: scenario[:assistant][:id])
+      inactive_course = Course.create(
+        name: 'Inactive assistant course',
+        institution_id: default_institution_id,
+        teacher_id: scenario[:teacher][:id],
+        active: false
+      )
+      AssistantTeacher.create(course_id: inactive_course[:id], teacher_id: scenario[:assistant][:id])
       login_as(scenario[:assistant])
 
       get '/'
@@ -52,6 +59,7 @@ RSpec.describe 'Dashboard' do
       expect(last_response.body).to include(scenario[:assessment][:name])
       expect(last_response.body).to include("/assessment/#{scenario[:assessment][:id]}")
       expect(last_response.body).to include('Assistant teacher')
+      expect(last_response.body).not_to include(inactive_course[:name])
     end
   end
 end

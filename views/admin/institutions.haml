@@ -1,0 +1,27 @@
+%h2=title(t(:Institutions))
+
+%a.btn.btn-default{:href=>url('/institution/new')}
+  %span.glyphicon.glyphicon-plus
+  =t(:Institution_new)
+
+%table.table.table-bordered
+  %thead
+    %tr
+      %th=t(:Id)
+      %th=t(:Name)
+      %th=t(:Actions)
+  %tbody
+    - @institutions.each do |institution|
+      %tr
+        %td=institution.id
+        %td=institution.name
+        %td
+          .btn-group.btn-group-sm
+            %a.btn.btn-default{:href=>url("/institution/#{institution.id}/edit")}
+              %span.glyphicon.glyphicon-pencil
+              =t(:Institution_edit)
+          - if User.where(:institution_id=>institution.id).empty? && Course.where(:institution_id=>institution.id).empty?
+            %form{:method=>:post, :action=>url("/institution/#{institution.id}/delete"), :style=>'display:inline'}
+              %button.btn.btn-danger.btn-sm{:type=>:submit}
+                %span.glyphicon.glyphicon-remove
+                =t(:Institution_delete)
