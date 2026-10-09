@@ -44,10 +44,17 @@ get '/course/:id' do |id|
 
   @course=Course[id]
   raise Coeval::NoCourseIdError, id unless @course
-  @assistant_course_access=auth_to('course_view') && !auth_to('course_admin')
+  assigned_as_assistant=AssistantTeacher[course_id:@course[:id], teacher_id:session['user_id']]
+  lead_teacher=@course[:teacher_id].to_i==session['user_id'].to_i
+  system_administrator=session['role_id']=='administrator'
+  student_access=auth_to('assessment_evaluate') && !auth_to('course_view')
+  halt 403 unless system_administrator || lead_teacher || assigned_as_assistant || student_access
+  @assistant_course_access=!assigned_as_assistant.nil? && !lead_teacher
+  @assistant_course_monitor=@assistant_course_access && auth_to('course_assistant_monitor')
+  @course_management_access=auth_to('course_admin') && !@assistant_course_access
+  @assessment_management_access=auth_to('assessment_admin') && !@assistant_course_access
   if @assistant_course_access
-    assigned=AssistantTeacher[course_id:@course[:id], teacher_id:session['user_id']]
-    halt 403 unless assigned && @course[:active]
+    halt 403 unless @course[:active]
   end
   @course_assessments=Assessment.where(course_id:id).order(:name).all
   @assessments=@course_assessments.to_h {|assessment| [assessment[:id], assessment[:name]]}
@@ -55,7 +62,7 @@ get '/course/:id' do |id|
   @teams=Team.where(assessment_id: @assessments.keys).as_hash(:id, :name)
   @teams_by_assessment=@course_assessments.to_h do |assessment|
     teams=Team.where(assessment_id:assessment[:id])
-    teams=teams.where(teacher_id:session['user_id']) if @assistant_course_access
+    teams=teams.where(teacher_id:session['user_id']) if @assistant_course_access && !@assistant_course_monitor
     teams=teams.order(:name).map do |team|
       {
         team:team,

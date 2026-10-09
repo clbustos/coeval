@@ -33,17 +33,20 @@
 
 
 %h3=t(:Assessments)
-- if auth_to('assessment_admin')
+- if @assessment_management_access
   .btn-group.btn-group-sm
     %a.btn.btn-default{:href=>url("/course/#{@course[:id]}/assessment/new")}
       %span.glyphicon.glyphicon-plus
       =t(:New_assessment)
+    %a.btn.btn-default{:href=>url("/course/#{@course[:id]}/excel")}
+      %span.glyphicon.glyphicon-transfer
+      =t(:Course_excel_import_export)
 - if @course.assessments.count>0
   %ul
     - @course.assessments.each do |assessment|
       %li
         %a{:href=>url("/assessment/#{assessment[:id]}")}=assessment[:name]
-  - if auth_to('assessment_admin')
+  - if @assessment_management_access
     .btn-group.btn-group-sm
       %a.btn.btn-default{:href=>url("/course/#{@course[:id]}/response_detail")}
         =t(:Response_detail)
@@ -53,7 +56,7 @@
     %em=t(:No_assessments)
 
 - if auth_to("course_view")
-  - unless @assistant_course_access
+  - unless @assistant_course_access && !@assistant_course_monitor
     %h3=t(:Students)
     %p=t(:Student_number, number:@students.count)
     %ul.list_group
@@ -99,7 +102,7 @@
     %p
       %em=t(:No_assessments)
 
-- if auth_to("course_admin")
+- if @course_management_access
   %h4=t(:Add_student_to_course)
   %form.form-inline{method:'get', action:url("/course/#{@course[:id]}")}
     .form-group

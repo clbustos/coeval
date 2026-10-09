@@ -500,6 +500,7 @@ pl:
   Permissions: "Uprawnienia"
   Previous_tags: "Poprzednio użyte tagi"
   auth:
+    course_assistant_monitor: 'Kurs: monitorowanie wszystkich grup jako nauczyciel pomocniczy'
     canonical_document_admin: "Dokumenty wzorcowe: Admin"
     canonical_document_view: "Dokumenty wzorcowe: Wyświetl"
     crossref_query: 'Crossref: zapytanie'

@@ -182,6 +182,45 @@ RSpec.describe 'Assessments controller' do
       expect(last_response.status).to eq(200)
     end
 
+    it 'shows open responses only from teams assigned to the assistant' do
+      Criterion.create(id:'open_comment', name:'Comment', criterion_type:'open_ended')
+      AssessmentCriterion.create(
+        assessment_id:@scenario[:assessment][:id],
+        criterion_id:'open_comment',
+        criterion_order:2
+      )
+      lead_student_assessment=StudentAssessment[
+        team_id:@scenario[:team][:id],
+        student_from:@scenario[:student][:id],
+        student_to:@scenario[:student][:id]
+      ]
+      assistant_student_assessment=StudentAssessment.create(
+        team_id:@assistant_team[:id],
+        student_from:@scenario[:student][:id],
+        student_to:@scenario[:student][:id],
+        complete:true,
+        saved:true
+      )
+      AssessmentResponse.create(
+        student_assessment_id:lead_student_assessment[:id],
+        criterion_id:'open_comment',
+        response_value:'Lead team private response',
+        omitted:false
+      )
+      AssessmentResponse.create(
+        student_assessment_id:assistant_student_assessment[:id],
+        criterion_id:'open_comment',
+        response_value:'Assistant team response',
+        omitted:false
+      )
+
+      get "/assessment/#{@scenario[:assessment][:id]}/check_open_ended_responses"
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include('Assistant team response')
+      expect(last_response.body).not_to include('Lead team private response')
+    end
+
     it 'denies administrative and team-detail actions' do
       get "/assessment/#{@scenario[:assessment][:id]}/edit"
       expect(last_response.status).to eq(403)
@@ -216,6 +255,7 @@ RSpec.describe 'Assessments controller' do
       expect(last_response.body).not_to include("/assessment/#{scenario[:assessment][:id]}/teacher_assignation")
       expect(last_response.body).not_to include("/assessment/#{scenario[:assessment][:id]}/duplicate")
       expect(last_response.body).not_to include("/assessment/#{scenario[:assessment][:id]}/delete")
+      expect(last_response.body).not_to include("action='/assessment/#{scenario[:assessment][:id]}/student_teams'")
 
       get "/assessment/#{scenario[:assessment][:id]}/edit"
       expect(last_response.status).to eq(403)
@@ -225,6 +265,32 @@ RSpec.describe 'Assessments controller' do
       expect(last_response.status).to eq(403)
       get "/assessment/#{scenario[:assessment][:id]}/delete"
       expect(last_response.status).to eq(403)
+
+      post "/assessment/#{scenario[:assessment][:id]}/student_teams",
+           team_id:scenario[:team][:id], student_ids:[scenario[:student][:id]]
+      expect(last_response.status).to eq(403)
+    end
+  end
+
+  describe 'assistant course monitor permission' do
+    it 'shows every team but keeps administrative actions disabled' do
+      scenario=create_course_scenario
+      AssistantTeacher.create(course_id:scenario[:course][:id], teacher_id:scenario[:assistant][:id])
+      Team.create(
+        name:'Assistant Team',
+        assessment_id:scenario[:assessment][:id],
+        teacher_id:scenario[:assistant][:id]
+      )
+      Role['guest'].add_auth_to(Authorization['course_assistant_monitor'])
+      login_as(scenario[:assistant])
+
+      get "/assessment/#{scenario[:assessment][:id]}"
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include('Team A')
+      expect(last_response.body).to include('Assistant Team')
+      expect(last_response.body).not_to include("/assessment/#{scenario[:assessment][:id]}/edit")
+      expect(last_response.body).not_to include("/assessment/#{scenario[:assessment][:id]}/teacher_assignation")
     end
   end
 end

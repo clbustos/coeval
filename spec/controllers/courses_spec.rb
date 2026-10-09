@@ -109,6 +109,24 @@ RSpec.describe 'Courses controller' do
 
       expect(last_response.status).to eq(403)
     end
+
+    it 'lets an assistant with monitor permission see every team in the assigned course' do
+      scenario = create_course_scenario
+      AssistantTeacher.create(course_id:scenario[:course][:id], teacher_id:scenario[:assistant][:id])
+      Team.create(
+        name:'Assistant Team',
+        assessment_id:scenario[:assessment][:id],
+        teacher_id:scenario[:assistant][:id]
+      )
+      Role['guest'].add_auth_to(Authorization['course_assistant_monitor'])
+      login_as(scenario[:assistant])
+
+      get "/course/#{scenario[:course][:id]}"
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include('Team A')
+      expect(last_response.body).to include('Assistant Team')
+    end
   end
 
   describe 'POST /course/:id/assessments' do

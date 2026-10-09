@@ -89,7 +89,7 @@
       %p
         %em=t(:No_teams)
 
-- if auth_to('assessment_admin')
+- if auth_to('assessment_admin') && !@assistant_assessment_access
   %h4=t(:Create_team)
   %form.form-inline{method:'post', action:url("/assessment/#{@assessment[:id]}/teams")}
     .form-group

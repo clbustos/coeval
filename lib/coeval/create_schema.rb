@@ -11,6 +11,7 @@ module Coeval
       dashboard_view
       course_view
       course_admin
+      course_assistant_monitor
       assessment_view
       assessment_admin
       assessment_evaluate

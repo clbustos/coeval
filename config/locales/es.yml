@@ -622,6 +622,7 @@ es:
     assessment_evaluate: "Evaluación: Evaluar otros"
     assessment_view: "Evaluación: Ver"
     course_admin: "Curso: Admin"
+    course_assistant_monitor: "Curso: monitorear todos los grupos como profesor asistente"
     course_view: "Curso: Ver"
     canonical_document_admin: "Documento Canónico: Admin"
     canonical_document_view: "Documento Canónico: Ver"

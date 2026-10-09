@@ -621,6 +621,7 @@ en:
     assessment_evaluate: "Assessment: Evaluate others"
     assessment_view: "Assessment: View"
     course_admin: "Course: Admin"
+    course_assistant_monitor: "Course: monitor every team as an assistant teacher"
     course_view: "Course: View"
     dashboard_view: "Dashboard: View"
     canonical_document_admin: "Canonical Document: Admin"
