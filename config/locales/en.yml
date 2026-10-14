@@ -43,6 +43,14 @@ en:
   Only_inactive: Only Inactive
   Both_active_and_inactive: Both active and inactive
   Assessment: Assessment
+  Preview: Preview
+  Preview_student_survey: Preview survey
+  Student_survey_preview: Student survey preview
+  Student_survey_preview_notice: This is a preview. Responses cannot be saved or submitted.
+  Example_student: Example student
+  Example_teammate: Example teammate
+  Open_ended_response_placeholder: The student will write their response here.
+  Back_to_assessment: Back to assessment
   Assessment_deleted: Assessment deleted
   Student_Assessments: Student assessments
   Student_Assessments_saved: 'Student assessments: Saved'

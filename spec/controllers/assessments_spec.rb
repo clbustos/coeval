@@ -35,6 +35,52 @@ RSpec.describe 'Assessments controller' do
       expect(last_response.body).to include('Team with teacher')
       expect(last_response.body).to include('Assistant')
     end
+
+    it 'links to the student survey preview' do
+      scenario = create_course_scenario
+      login_as(scenario[:teacher])
+
+      get "/assessment/#{scenario[:assessment][:id]}"
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include("/assessment/#{scenario[:assessment][:id]}/preview")
+      expect(last_response.body).to include('Preview survey')
+    end
+  end
+
+  describe 'GET /assessment/:id/preview' do
+    it 'shows the survey structure without an enabled form' do
+      scenario = create_course_scenario
+      Criterion['criterion_1'].update(criterion_type:'ordered_levels')
+      Criterion.create(id:'open_comment', name:'Comment', criterion_type:'open_ended')
+      AssessmentCriterion.create(
+        assessment_id:scenario[:assessment][:id],
+        criterion_id:'open_comment',
+        criterion_order:2
+      )
+      login_as(scenario[:teacher])
+
+      get "/assessment/#{scenario[:assessment][:id]}/preview"
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include('Student survey preview')
+      expect(last_response.body).to include('Collaboration')
+      expect(last_response.body).to include('Comment')
+      expect(last_response.body).to include('Low')
+      expect(last_response.body).to include('High')
+      expect(last_response.body).to include('disabled')
+      expect(last_response.body).not_to include('<form')
+      expect(last_response.body).not_to include('/assessment/receive_response')
+    end
+
+    it 'denies students without assessment view permission' do
+      scenario = create_course_scenario
+      login_as(scenario[:student])
+
+      get "/assessment/#{scenario[:assessment][:id]}/preview"
+
+      expect(last_response.status).to eq(403)
+    end
   end
 
   describe 'teacher assignation' do

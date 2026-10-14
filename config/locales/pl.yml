@@ -1,5 +1,13 @@
 ---
 pl:
+  Preview: Podgląd
+  Preview_student_survey: Podgląd ankiety
+  Student_survey_preview: Podgląd ankiety studenta
+  Student_survey_preview_notice: To jest podgląd. Odpowiedzi nie mogą zostać zapisane ani wysłane.
+  Example_student: Przykładowy student
+  Example_teammate: Przykładowa osoba z zespołu
+  Open_ended_response_placeholder: Student wpisze tutaj swoją odpowiedź.
+  Back_to_assessment: Powrót do oceny
   Actions: Co chcesz zrobić?
   Assign_teams_to_teacher: Przypisz grupy nauczycielom
   Select_teacher: Wybierz nauczyciela

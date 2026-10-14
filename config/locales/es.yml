@@ -44,6 +44,14 @@ es:
   Only_inactive: Sólo inactivo
   Both_active_and_inactive: Tanto activo como inactivo
   Assessment: Evaluación
+  Preview: Previsualización
+  Preview_student_survey: Previsualizar encuesta
+  Student_survey_preview: Previsualización de la encuesta de estudiantes
+  Student_survey_preview_notice: Esta es una previsualización. Las respuestas no se pueden guardar ni enviar.
+  Example_student: Estudiante de ejemplo
+  Example_teammate: Compañero/a de ejemplo
+  Open_ended_response_placeholder: El estudiante escribirá aquí su respuesta.
+  Back_to_assessment: Volver a la evaluación
   Assessment_deleted: Evaluación eliminada
   Student_Assessments: Evaluaciones de los estudiantes
   Student_Assessments_saved: 'Evaluaciones de los estudiantes: Grabadas'

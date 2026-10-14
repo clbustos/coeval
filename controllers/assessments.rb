@@ -140,6 +140,19 @@ get '/assessment/:id' do |id|
   haml "assessments/view".to_sym, escape_html: false
 end
 
+get '/assessment/:id/preview' do |id|
+  halt 403 unless auth_to('assessment_view')
+  @assessment=Assessment[id]
+  raise Coeval::NoAssessmentIdError, id unless @assessment
+
+  if course_assistant_for_assessment?(@assessment, session['user_id'])
+    halt 403 unless assistant_can_access_assessment?(@assessment, session['user_id'])
+  end
+
+  @structure=@assessment.criteria_structure
+  haml "assessments/preview".to_sym, escape_html: false
+end
+
 get '/assessment/:id/teacher_assignation' do |id|
   halt 403 unless auth_to('assessment_admin')
   @assessment=Assessment[id]

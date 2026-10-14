@@ -35,6 +35,9 @@
 
 - if auth_to('assessment_admin') && !@assistant_assessment_access
   .btn-group{role:'group'}
+    %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/preview")}
+      %span.glyphicon.glyphicon-eye-open
+      =t(:Preview_student_survey)
     %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/edit")}
       =t(:Edit)
     %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/check_open_ended_responses")}
@@ -49,6 +52,9 @@
       =t(:Delete)
 - elsif @assistant_assessment_access && @assistant_assigned_team_ids.any?
   .btn-group{role:'group'}
+    %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/preview")}
+      %span.glyphicon.glyphicon-eye-open
+      =t(:Preview_student_survey)
     %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/check_open_ended_responses")}
       =t(:Check_open_ended_responses)
     %a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}/export_excel")}
