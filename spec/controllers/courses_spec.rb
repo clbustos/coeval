@@ -37,6 +37,18 @@ RSpec.describe 'Courses controller' do
   end
 
   describe 'administrator course management' do
+    it 'shows management actions for a course owned by another teacher' do
+      scenario = create_course_scenario
+      administrator = create_user(login: 'course_admin_view', role_id: 'administrator')
+      login_as(administrator)
+
+      get "/course/#{scenario[:course][:id]}"
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include("/course/#{scenario[:course][:id]}/edit")
+      expect(last_response.body).to include("/course/#{scenario[:course][:id]}/excel")
+    end
+
     it 'allows an administrator to edit a course owned by another teacher' do
       scenario = create_course_scenario
       administrator = create_user(login: 'course_admin', role_id: 'administrator')

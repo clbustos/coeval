@@ -46,7 +46,7 @@ get '/course/:id' do |id|
   raise Coeval::NoCourseIdError, id unless @course
   assigned_as_assistant=AssistantTeacher[course_id:@course[:id], teacher_id:session['user_id']]
   lead_teacher=@course[:teacher_id].to_i==session['user_id'].to_i
-  system_administrator=session['role_id']=='administrator'
+  system_administrator=User[session['user_id']][:role_id]=='administrator'
   student_access=auth_to('assessment_evaluate') && !auth_to('course_view')
   halt 403 unless system_administrator || lead_teacher || assigned_as_assistant || student_access
   @assistant_course_access=!assigned_as_assistant.nil? && !lead_teacher

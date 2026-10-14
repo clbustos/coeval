@@ -1,5 +1,5 @@
 %div{:class=>"btn-group btn-group-sm", :role=>'group'}
-  - if auth_to("course_edit") or course_belongs_to(course.id, session['user_id'])
+  - if auth_to("course_admin")
     %a{:role=>:button, :href=>url("/course/#{course.id}/edit"), :class=>"btn btn-default"}
       %span{:class=>"glyphicon glyphicon-pencil"}
       =t(:Edit)

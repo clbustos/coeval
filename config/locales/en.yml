@@ -146,6 +146,43 @@ en:
   Administrator: Administrator
   App_title: Coeval
   Author: Author
+  auth:
+    assessment_admin: 'Assessment: Admin'
+    assessment_evaluate: 'Assessment: Evaluate others'
+    assessment_view: 'Assessment: View'
+    course_admin: 'Course: Admin'
+    course_assistant_monitor: 'Course: monitor every team as an assistant teacher'
+    course_view: 'Course: View'
+    dashboard_view: 'Dashboard: View'
+    canonical_document_admin: 'Canonical Document: Admin'
+    canonical_document_view: 'Canonical Document: See'
+    semantic_scholar_query: 'Semantic Scholar: Query'
+    crossref_query: 'Crossref: Query'
+    file_admin: 'Files: Admin'
+    file_view: 'Files: See'
+    group_admin: 'Groups: Admin'
+    group_view: 'Groups: See'
+    message_edit: 'Messages: Edit'
+    message_view: 'Messages: See'
+    record_edit: 'Records: Edit'
+    record_view: 'Records: See'
+    reference_edit: 'References: Edit'
+    reference_view: 'References: See'
+    reflection: 'Reflection (software)'
+    review_admin: 'Systematic review: Admin'
+    review_admin_view: 'Systematic review: Admin See'
+    review_analyze: 'Systematic review: Analyze'
+    review_edit: 'Systematic review: Edit'
+    review_view: 'Systematic review: See'
+    role_admin: 'Roles: Admin'
+    role_view: 'Roles: See'
+    pubmed_query: 'Pubmed: Query'
+    scale_admin: 'Scales: Admin'
+    scopus_query: 'Scopus: Query'
+    search_edit: 'Searches: Edit'
+    search_view: 'Searches: See'
+    tag_edit: 'Tags: Edit'
+    user_admin: 'Users: Admin'
   Authorizations: Authorizations
   Back: Back
   Cancel: Cancel

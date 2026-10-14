@@ -3,6 +3,11 @@
 require_relative '../spec_helper'
 
 RSpec.describe 'I18n configuration' do
+  it 'includes translated authorization labels' do
+    expect(::I18n.t('auth.course_admin', locale: :es)).to eq('Curso: Admin')
+    expect(::I18n.t('auth.course_admin', locale: :en)).to eq('Course: Admin')
+  end
+
   it 'falls back to Spanish when a key is missing in the current locale' do
     ::I18n.locale = :en
 

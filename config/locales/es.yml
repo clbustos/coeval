@@ -149,6 +149,43 @@ es:
   Administrator: Administrador
   App_title: Coeval
   Author: Autor
+  auth:
+    assessment_admin: 'Evaluación: Admin'
+    assessment_evaluate: 'Evaluación: Evaluar otros'
+    assessment_view: 'Evaluación: Ver'
+    course_admin: 'Curso: Admin'
+    course_assistant_monitor: 'Curso: monitorear todos los grupos como profesor asistente'
+    course_view: 'Curso: Ver'
+    canonical_document_admin: 'Documento Canónico: Admin'
+    canonical_document_view: 'Documento Canónico: Ver'
+    dashboard_view: 'Tablero: Ver'
+    semantic_scholar_query: 'Semantic Scholar: Consultar'
+    crossref_query: 'Crossref: Consultar'
+    file_admin: 'Archivos: Admin'
+    file_view: 'Archivos: Ver'
+    group_admin: 'Grupos: Admin'
+    group_view: 'Grupos: Ver'
+    message_edit: 'Mensajes: Editar'
+    message_view: 'Mensajes: Ver'
+    record_edit: 'Registro: Editar'
+    record_view: 'Registro: Ver'
+    reference_edit: 'Referencia: Editar'
+    reference_view: 'Referencia: Ver'
+    reflection: 'Reflexión'
+    review_admin: 'Revisión sistemática: administrar'
+    review_admin_view: 'Revisión sistemática: ver administración'
+    review_analyze: 'Revisión sistemática: analizar'
+    review_edit: 'Revisión sistemática: editar'
+    review_view: 'Revisión sistemática: ver'
+    role_admin: 'Roles: Admin'
+    role_view: 'Roles: Ver'
+    pubmed_query: 'Pubmed: Consultar'
+    scale_admin: 'Escalas: Admin'
+    scopus_query: 'Scopus: Consultar'
+    search_edit: 'Búsqueda: Editar'
+    search_view: 'Búsqueda: Ver'
+    tag_edit: 'Etiquetas: Editar'
+    user_admin: 'Usuario: Admin'
   Authorizations: Autorizaciones
   Back: Atrás
   Cancel: Cancelar

@@ -40,6 +40,35 @@ pl:
   Administrator: Administrator
   App_title: Buhos
   Author: Autor
+  auth:
+    course_assistant_monitor: 'Kurs: monitorowanie wszystkich grup jako nauczyciel pomocniczy'
+    canonical_document_admin: 'Dokumenty wzorcowe: Admin'
+    canonical_document_view: 'Dokumenty wzorcowe: Wyświetl'
+    crossref_query: 'Crossref: zapytanie'
+    file_admin: 'Pliki: Admin'
+    file_view: 'Pliki: Wyświetl'
+    group_admin: 'Grupy: Admin'
+    group_view: 'Grupy: Wyświetl'
+    message_edit: 'Wiadomości: Edytuj'
+    message_view: 'Wiadomości: Wyświetl'
+    record_edit: 'Rekordy: Edytuj'
+    record_view: 'Rekordy: Wyświetl'
+    reference_edit: 'Cytowania: Edytuj'
+    reference_view: 'Cytowania: wyświetl'
+    reflection: 'Reflection (software)'
+    review_admin: 'Przegląd systematyczny: Admin'
+    review_analyze: 'Przegląd systematyczny: Analizuj'
+    review_edit: 'Przegląd systematyczny: Edytuj'
+    review_view: 'Przegląd systematyczny: Wyświetl'
+    role_admin: 'Role: Admin'
+    role_view: 'Role: Wyświetl'
+    pubmed_query: 'Pubmed: zapytanie'
+    scale_admin: 'Skale: Administrator'
+    scopus_query: 'Scopus: Zapytanie'
+    search_edit: 'Wyszukiwania: Edytuj'
+    search_view: 'Wyszukiwania: Wyświetl'
+    tag_edit: 'Tagi: Edytuj'
+    user_admin: 'Użytkownicy: Admin'
   Authorizations: Autoryzacje
   Back: Powrót
   Cancel: Anuluj
