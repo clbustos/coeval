@@ -1,0 +1,42 @@
+.heading=t(:Student_survey_preview)
+%ul.breadcrumb
+  %li
+    %a{:href=>url("/courses")}=t(:Courses)
+  %li
+    %a{:href=>url("/course/#{@assessment[:course_id]}")}=@assessment.course_name
+  %li
+    %a{:href=>url("/assessment/#{@assessment[:id]}")}=@assessment[:name]
+  %li.active=t(:Preview)
+
+.alert.alert-info{role:'alert'}=t(:Student_survey_preview_notice)
+
+.header
+  %h2=t(:evaluate_from_to, assessment:@assessment[:name], student_from:t(:Example_student), student_to:t(:Example_teammate))
+
+%div.list-group
+  %div.list-group-item
+    %span.titulo=t(:Evaluator)
+    %span{name:'name'}=t(:Example_student)
+  %div.list-group-item
+    %span.titulo=t(:Evaluatee)
+    %span{name:'name'}=t(:Example_teammate)
+  %div.list-group-item
+    %span.titulo=t(:Status)
+    %span.name=t(:Incomplete)
+
+%h3=t(:Criteria)
+%div.list-group
+  - @structure.each do |criterion|
+    %div.list-group-item
+      %h4.list-group-item-heading=criterion[:criterion_name]
+      - if criterion[:criterion_type]=='ordered_levels'
+        - criterion[:levels].each do |level|
+          %div.radio
+            %label
+              %input{type:'radio', disabled:true}
+              =level[:description]
+              ="(#{t(:points, points:level[:points])})"
+      - elsif criterion[:criterion_type]=='open_ended'
+        %textarea.form-control{rows:'3', disabled:true, placeholder:t(:Open_ended_response_placeholder)}
+
+%a.btn.btn-default{:href=>url("/assessment/#{@assessment[:id]}")}=t(:Back_to_assessment)
