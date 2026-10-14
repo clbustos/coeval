@@ -281,4 +281,59 @@ RSpec.describe 'Courses controller' do
       end
     end
   end
+
+  describe 'POST /course/excel_import' do
+    def course_import_file(headers, rows = [])
+      require 'caxlsx'
+      tempfile = Tempfile.new(['course-import', '.xlsx'])
+      package = Axlsx::Package.new
+      package.workbook.add_worksheet(name: 'Users') do |sheet|
+        sheet.add_row(headers)
+        rows.each { |row| sheet.add_row(row) }
+      end
+      package.serialize(tempfile.path)
+      tempfile
+    end
+
+    it 'reports missing headers without raising a NameError' do
+      scenario = create_course_scenario
+      administrator = create_user(login: 'excel_admin', role_id: 'administrator')
+      login_as(administrator)
+      tempfile = course_import_file(['unrelated'])
+
+      post '/course/excel_import',
+           course_id: scenario[:course][:id],
+           file: Rack::Test::UploadedFile.new(tempfile.path, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+      expect(last_response).to be_redirect
+      expect(last_response.location).to include("/course/#{scenario[:course][:id]}/excel")
+      follow_redirect!
+      expect(last_response.body).to include('Missing fields:email, name')
+    ensure
+      tempfile&.unlink
+    end
+
+    it 'accepts case-insensitive headers and the E-mail spelling' do
+      scenario = create_course_scenario
+      administrator = create_user(login: 'excel_admin', role_id: 'administrator')
+      login_as(administrator)
+      tempfile = course_import_file(
+        ['E-mail', 'Name', 'Language', 'Password', 'Login'],
+        [["new.student@example.test\u00a0", 'New Student', 'Español', 'password', "new.student\u00a0"]]
+      )
+
+      post '/course/excel_import',
+           course_id: scenario[:course][:id],
+           file: Rack::Test::UploadedFile.new(tempfile.path, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+      expect(last_response).to be_redirect
+      student = User[email: 'new.student@example.test']
+      expect(student).not_to be_nil
+      expect(student[:login]).to eq('new.student')
+      expect(student[:language]).to eq('es')
+      expect(StudentCourse[course_id: scenario[:course][:id], student_id: student[:id]]).not_to be_nil
+    ensure
+      tempfile&.unlink
+    end
+  end
 end

@@ -311,7 +311,12 @@ post '/course/excel_import' do
   error 404 if !@course
   doc = SimpleXlsxReader.open(archivo["tempfile"])
   sheet=doc.sheets.first
-  header=sheet.headers
+  # Spreadsheet programs and user-created templates often change header
+  # capitalization. Normalize it here while keeping the column positions.
+  header=sheet.headers.map do |value|
+    normalized=value.to_s.strip.downcase
+    normalized == "e-mail" ? "email" : normalized
+  end
   id_index       = header.find_index("id")
   id_login       = header.find_index("login")
   id_email       = header.find_index("email")
@@ -330,26 +335,33 @@ post '/course/excel_import' do
   if !(missing_fields.length==0 or missing_fields==['id'])
     result.error("Missing fields:#{missing_fields.join(', ')}")
     add_result(result)
-    redirect url("/course/#{id}")
+    redirect url("/course/#{course_id}/excel")
   end
 
   assessment_names=Assessment.where(course_id:course_id).to_hash(:name, :id)
-  assistant_teachers=@course.assistant_teachers.to_hash(:login, :id)
+  assistant_teachers=@course.assistant_teachers.each_with_object({}) do |teacher, lookup|
+    lookup[teacher[:login]] = teacher[:id]
+    lookup[teacher[:name]] = teacher[:id]
+  end
+  clean_cell = lambda do |value|
+    value.is_a?(String) ? value.gsub(/\A[[:space:]]+|[[:space:]]+\z/, '') : value
+  end
   new_students=0
   old_students=0
   $db.transaction(:rollback => :rollback) do
     sheet.data.each do |row|
-      email=row[id_email] # Required
-      name=row[id_name] # Required
+      email=clean_cell.call(row[id_email]) # Required
+      name=clean_cell.call(row[id_name]) # Required
 
-      login=id_login.nil? ? nil: row[id_login]
+      login=id_login.nil? ? nil: clean_cell.call(row[id_login])
       user_id=id_index.nil? ? nil : row[id_index]
-      team=id_team.nil? ? nil :  row[id_team]
-      assessment=id_assessment.nil? ? nil : row[id_assessment]
+      team=id_team.nil? ? nil : clean_cell.call(row[id_team])
+      assessment=id_assessment.nil? ? nil : clean_cell.call(row[id_assessment])
 
-      language=id_language.nil? ? nil : row[id_language]
+      language=id_language.nil? ? nil : clean_cell.call(row[id_language])
+      language={'español'=>'es', 'english'=>'en'}[language.downcase] || language if language.is_a?(String)
       password=id_password.nil? ? nil : row[id_password]
-      assistant_teacher = id_assistant_teacher.nil? ? nil: row[id_assistant_teacher]
+      assistant_teacher = id_assistant_teacher.nil? ? nil: clean_cell.call(row[id_assistant_teacher])
       next if email.nil?
 
 
