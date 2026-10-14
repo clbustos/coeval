@@ -36,6 +36,24 @@ RSpec.describe 'Courses controller' do
     end
   end
 
+  describe 'administrator course management' do
+    it 'allows an administrator to edit a course owned by another teacher' do
+      scenario = create_course_scenario
+      administrator = create_user(login: 'course_admin', role_id: 'administrator')
+      login_as(administrator)
+
+      post "/course/#{scenario[:course][:id]}/edit",
+           name: 'Course managed by administrator',
+           description: scenario[:course][:description],
+           institution: scenario[:course][:institution_id].to_s,
+           teacher: scenario[:teacher][:id].to_s,
+           active: 'on'
+
+      expect(last_response).to be_redirect
+      expect(scenario[:course].refresh[:name]).to eq('Course managed by administrator')
+    end
+  end
+
   describe 'student assignment' do
     it 'searches students by name from the course page' do
       scenario = create_course_scenario

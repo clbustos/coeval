@@ -61,5 +61,18 @@ RSpec.describe 'Dashboard' do
       expect(last_response.body).to include('Assistant teacher')
       expect(last_response.body).not_to include(inactive_course[:name])
     end
+
+    it 'shows every active course to an administrator, including courses owned by other teachers' do
+      scenario = create_course_scenario
+      administrator = create_user(login: 'dashboard_admin', role_id: 'administrator', name: 'Administrator')
+      login_as(administrator)
+
+      get '/'
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to include(scenario[:course][:name])
+      expect(last_response.body).to include("/course/#{scenario[:course][:id]}")
+      expect(last_response.body).to include('Administrator')
+    end
   end
 end

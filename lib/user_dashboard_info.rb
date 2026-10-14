@@ -44,6 +44,12 @@ class UserDashboardInfo
   end
 
   def active_teacher_courses
+    if @user[:role_id]=='administrator'
+      return Course.where(active:true).order(:name).all.map do |course|
+        {course:course, role: :Administrator}
+      end
+    end
+
     lead_courses=Course.where(teacher_id:@user[:id], active:true).all.map do |course|
       {course:course, role: :Lead_teacher}
     end
