@@ -19,6 +19,16 @@ function fieldIsFixed(field) {
     return input && (!checkbox || !checkbox.checked);
 }
 
+function syncDatetimeInput(checkbox) {
+    const input = fieldInput(checkbox.dataset.datetimeField);
+    if (!input) {
+        return;
+    }
+
+    input.disabled = checkbox.checked;
+    input.classList.toggle('collapse', checkbox.checked);
+}
+
 function previousFixedValue(index) {
     for (let i = index - 1; i >= 0; i--) {
         const field = assessmentDatetimeOrder[i];
@@ -68,17 +78,10 @@ function syncFeedbackStartFromEvaluationEnd() {
 
 function checkboxToDatetimeListener() {
     document.querySelectorAll('.checkbox_to_datetime').forEach(function(checkbox) {
-        checkbox.addEventListener('change', function() {
-            const input = fieldInput(checkbox.dataset.datetimeField);
-            if (!input) {
-                return;
-            }
+        syncDatetimeInput(checkbox);
 
-            if (checkbox.checked) {
-                input.classList.add('collapse');
-            } else {
-                input.classList.remove('collapse');
-            }
+        checkbox.addEventListener('change', function() {
+            syncDatetimeInput(checkbox);
 
             syncFeedbackStartFromEvaluationEnd();
             pushFollowingTimes();
