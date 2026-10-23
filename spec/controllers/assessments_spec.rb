@@ -145,6 +145,20 @@ RSpec.describe 'Assessments controller' do
   end
 
   describe 'POST /assessment/:id/edit' do
+    [:end_time_evaluation, :end_time_feedback].each do |end_field|
+      it "rejects #{end_field} equal to its start" do
+        scenario = create_course_scenario
+        login_as(scenario[:teacher])
+        original = scenario[:assessment].values.dup
+        start_field = end_field.to_s.sub('end_', 'start_').to_sym
+        post "/assessment/#{scenario[:assessment][:id]}/edit",
+             assessment_edit_params(end_field => assessment_edit_params[start_field]),
+             'HTTP_REFERER' => "/assessment/#{scenario[:assessment][:id]}/edit"
+        expect(last_response).to be_redirect
+        expect(scenario[:assessment].refresh.values).to eq(original)
+      end
+    end
+
     it 'updates ordered dates and allows dates without a fixed value' do
       scenario = create_course_scenario
       login_as(scenario[:teacher])
@@ -195,6 +209,42 @@ RSpec.describe 'Assessments controller' do
 
       expect(last_response.status).to eq(200)
       expect(AssessmentCriterion[assessment_id: scenario[:assessment][:id], criterion_id: 'criterion_blank']).to be_nil
+    end
+  end
+
+  describe 'assessment duplication dates' do
+    it 'uses current dates in the form and saves them without changing the original' do
+      scenario = create_course_scenario
+      original = scenario[:assessment].values.dup
+      login_as(scenario[:teacher])
+      now = Time.local(2026, 10, 23, 12, 0, 0)
+      allow(Time).to receive(:now).and_return(now)
+
+      get "/assessment/#{scenario[:assessment][:id]}/duplicate"
+
+      expect(last_response.status).to eq(200)
+      require 'nokogiri'
+      form = Nokogiri::HTML(last_response.body)
+      dates = {}
+      expected = [now, now + 30 * 86400, now + 30 * 86400, now + 60 * 86400]
+      ASSESSMENT_DATETIME_FIELDS.zip(expected).each do |field, time|
+        value = form.at_css("input[name='#{field}']")['value']
+        local = Coeval::TimeZone.local(time, scenario[:course].timezone)
+        expect(value).to eq(local.strftime('%Y-%m-%dT%H:%M'))
+        expect(form.at_css("input[name='#{field}_nil']")['checked']).to be_nil
+        dates[field] = value
+      end
+
+      post "/assessment/#{scenario[:assessment][:id]}/duplicate",
+           assessment_edit_params(dates.merge(origin_id: scenario[:assessment][:id].to_s))
+
+      expect(last_response).to be_redirect
+      duplicate = Assessment.order(:id).last
+      expect(duplicate[:id]).not_to eq(scenario[:assessment][:id])
+      ASSESSMENT_DATETIME_FIELDS.zip(expected).each do |field, time|
+        expect(duplicate[field]).to eq(time)
+      end
+      expect(scenario[:assessment].refresh.values).to eq(original)
     end
   end
 

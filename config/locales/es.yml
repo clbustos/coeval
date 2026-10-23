@@ -5,7 +5,7 @@ es:
   Assessment_created: Evaluación %{assessment_name} creada
   Assessment_datetime_order_error: 'Las fechas de la evaluación deben mantener el
     orden: inicio de evaluación, término de evaluación, inicio de feedback y término
-    de feedback'
+    de feedback. Cada cierre debe ser posterior a su inicio'
   Assessment_without_name: La evaluación debe tener nombre
   Assign_students_to_teams: Asignar estudiantes a equipos
   Assign_teams_to_teacher: Asignar grupos a profesores

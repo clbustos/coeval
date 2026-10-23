@@ -28,7 +28,11 @@ end
 
 def valid_assessment_datetime_order?(values)
   fixed_values=ASSESSMENT_DATETIME_FIELDS.map {|field| values[field]}.compact
-  fixed_values.each_cons(2).all? {|previous_value, next_value| next_value>=previous_value}
+  ordered = fixed_values.each_cons(2).all? {|previous_value, next_value| next_value>=previous_value}
+  ordered && [[:start_time_evaluation, :end_time_evaluation],
+              [:start_time_feedback, :end_time_feedback]].all? do |start_field, end_field|
+    values[start_field].nil? || values[end_field].nil? || values[end_field] > values[start_field]
+  end
 end
 
 def halt_invalid_assessment_datetime_order(values)
@@ -313,6 +317,16 @@ get '/assessment/:id/duplicate' do |id|
 
   @criteria_hash=@assessment.criteria_hash
 
+  now = Time.now
+  month = 30 * 24 * 60 * 60
+  @duplicate_schedule = Assessment.new(
+    course_id: @assessment[:course_id],
+    start_time_evaluation: now,
+    end_time_evaluation: now + month,
+    start_time_feedback: now + month,
+    end_time_feedback: now + 2 * month
+  )
+
   haml "assessments/prepare_duplicate".to_sym, escape_html: false
 end
 
@@ -562,9 +576,18 @@ post '/assessment/:id/schedule/:action' do |id, action|
   week = 7 * 24 * 60 * 60
   values = case action
            when 'open_evaluation'
-             changes = {start_time_evaluation: now - 60 * 60}
+             changes = {start_time_evaluation: now - 60 * 60, end_time_evaluation: now + week}
              [:start_time_feedback, :end_time_feedback].each do |field|
                changes[field] = assessment[field] + week unless assessment[field].nil?
+             end
+             if changes[:start_time_feedback]
+               changes[:start_time_feedback] = [changes[:start_time_feedback], changes[:end_time_evaluation]].max
+             end
+             if changes[:end_time_feedback]
+               feedback_start = changes[:start_time_feedback] || changes[:end_time_evaluation]
+               if changes[:end_time_feedback] <= feedback_start
+                 changes[:end_time_feedback] = feedback_start + week
+               end
              end
              changes
            when 'open_feedback'
@@ -572,6 +595,7 @@ post '/assessment/:id/schedule/:action' do |id, action|
            when 'close_feedback'
              {end_time_feedback: now}
            end
+  halt_invalid_assessment_datetime_order(assessment.values.merge(values))
   assessment.update(values)
   add_message(t(:Assessment_schedule_updated))
   redirect url("/assessment/#{assessment[:id]}")

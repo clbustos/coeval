@@ -34,7 +34,7 @@
         %input.col-sm-2{type:'checkbox', name:'active', checked:true}
       - [:start_time_evaluation, :end_time_evaluation, :start_time_feedback, :end_time_feedback].each do |field|
         %div{:class=>"form-group"}
-          =partial(:datetime_input, :locals=>{field: field, assessment:@assessment})
+          =partial(:datetime_input, :locals=>{field: field, assessment:@duplicate_schedule})
 
 
     %div.panel-heading=t(:Criteria)

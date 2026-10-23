@@ -23,6 +23,9 @@
     %div{:class=>"list-group-item"}
       %span{:class=>"titulo"}=t(field)
       =@assessment.formatted_datetime(field)
+      - if auth_to('assessment_admin') && !@assistant_assessment_access
+        - if (field == :start_time_evaluation && @assessment.moment_to_evaluate?) || (field == :start_time_feedback && @assessment.feedback_moment?)
+          %span.badge=t(:Active)
   %div{:class=>"list-group-item"}
     %span{:class=>"titulo"}=t(:Grade_system)
     =@assessment[:grade_system]

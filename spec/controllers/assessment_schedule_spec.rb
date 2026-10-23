@@ -5,7 +5,7 @@ RSpec.describe 'Assessment schedule actions' do
     @scenario = create_course_scenario
     @assessment = @scenario[:assessment]
     @now = Time.local(2026, 10, 23, 12, 0, 0)
-    allow(Time).to receive(:now).and_return(@now)
+    allow(Time).to receive(:now) { @now }
   end
 
   def schedule(action)
@@ -16,12 +16,34 @@ RSpec.describe 'Assessment schedule actions' do
   it 'opens entry and shifts existing feedback dates by one week' do
     login_as(@scenario[:teacher])
     start_feedback = @assessment[:start_time_feedback]
-    end_feedback = @assessment[:end_time_feedback]
     schedule('open_evaluation')
     expect(last_response).to be_redirect
     expect(@assessment[:start_time_evaluation]).to eq(@now - 3600)
-    expect(@assessment[:start_time_feedback]).to eq(start_feedback + 604800)
-    expect(@assessment[:end_time_feedback]).to eq(end_feedback + 604800)
+    expect(@assessment[:end_time_evaluation]).to eq(@now + 604800)
+    expect(@assessment[:start_time_feedback]).to eq([start_feedback + 604800, @now + 604800].max)
+    expect(@assessment[:end_time_feedback]).to be > @assessment[:start_time_feedback]
+    expect(@assessment.moment_to_evaluate?).to be(true)
+  end
+
+  it 'repairs expired and reversed feedback dates when reopening evaluation' do
+    login_as(@scenario[:teacher])
+    @assessment.update(end_time_evaluation:@now - 86400,
+                       start_time_feedback:@now - 604800 * 3,
+                       end_time_feedback:@now - 604800 * 4)
+    schedule('open_evaluation')
+    expect(@assessment[:end_time_evaluation]).to eq(@now + 604800)
+    expect(@assessment[:start_time_feedback]).to eq(@assessment[:end_time_evaluation])
+    expect(@assessment[:end_time_feedback]).to eq(@assessment[:start_time_feedback] + 604800)
+  end
+
+  it 'rejects closing feedback before it starts' do
+    login_as(@scenario[:teacher])
+    @assessment.update(start_time_feedback:@now + 86400, end_time_feedback:@now + 172800)
+    original = @assessment.values.dup
+    post "/assessment/#{@assessment[:id]}/schedule/close_feedback", {},
+         'HTTP_REFERER' => "/assessment/#{@assessment[:id]}"
+    expect(last_response).to be_redirect
+    expect(@assessment.refresh.values).to eq(original)
   end
 
   it 'preserves unset feedback dates when opening entry' do
@@ -42,6 +64,8 @@ RSpec.describe 'Assessment schedule actions' do
 
   it 'closes feedback without changing the other dates' do
     login_as(@scenario[:teacher])
+    @assessment.update(start_time_evaluation:@now - 10800, end_time_evaluation:@now - 7200,
+                       start_time_feedback:@now - 3600)
     original = @assessment.values.dup
     schedule('close_feedback')
     expect(@assessment.values).to eq(original.merge(end_time_feedback:@now))
@@ -54,6 +78,7 @@ RSpec.describe 'Assessment schedule actions' do
     course_original = @scenario[:course].values.dup
 
     %w[open_evaluation open_feedback close_feedback].each do |action|
+      @now += 60
       schedule(action)
       expect(last_response).to be_redirect
       expect(last_response.location).to end_with("/assessment/#{@assessment[:id]}")

@@ -4,7 +4,7 @@ en:
   Add_student_to_course: Add student to course
   Assessment_created: Assessment %{assessment_name} created
   Assessment_datetime_order_error: 'Assessment dates must keep this order: evaluation
-    start, evaluation end, feedback start, and feedback end'
+    start, evaluation end, feedback start, and feedback end. Each end must be after its start'
   Assessment_without_name: Assessment must have a name
   Assign_students_to_teams: Assign students to teams
   Assign_teams_to_teacher: Assign teams to teachers
