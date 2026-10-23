@@ -3,6 +3,22 @@
 require_relative '../spec_helper'
 
 RSpec.describe 'Assessments controller' do
+  it 'saves course wall clocks as instants and shows the course zone' do
+    scenario = create_course_scenario
+    scenario[:course].update(timezone:'Asia/Tokyo')
+    login_as(scenario[:teacher])
+    assessment = scenario[:assessment]
+    post "/assessment/#{assessment[:id]}/edit", assessment_edit_params
+    expect(last_response.status).to eq(200)
+    expect(assessment.refresh[:start_time_evaluation].utc).to eq(Time.utc(2026, 5, 4, 0))
+    get "/assessment/#{assessment[:id]}/edit"
+    expect(last_response.body).to include('2026-05-04T09:00', 'Asia/Tokyo')
+    get '/logout'
+    login_as(scenario[:student])
+    get '/'
+    expect(last_response.body).to include('Asia/Tokyo')
+  end
+
   def assessment_edit_params(overrides={})
     {
       name: 'Assessment A edited',

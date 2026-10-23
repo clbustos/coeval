@@ -344,3 +344,14 @@ en:
   Welcome_guest: Welcome,&nbsp;visitor
   'Yes': 'Yes'
   Select_an_option: Select an option
+
+  Timezone: Time zone
+  System_timezone: Use system setting
+  Invalid_timezone: Invalid time zone
+  Invalid_local_datetime: 'Invalid or ambiguous date during a clock change. Choose another time.'
+
+  Open_evaluation: Open information entry
+  Open_feedback: Start feedback
+  Close_feedback: Close feedback
+  Assessment_schedule_actions: Manage assessment dates
+  Assessment_schedule_updated: Assessment dates updated

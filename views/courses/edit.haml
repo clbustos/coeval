@@ -17,6 +17,12 @@
     %div{:class=>"list-group-item"}
       %span{:class=>"titulo"}=t(:Description)
       %input{type:'textbox', name:'description', value: @course[:description], style:'width:80%'}
+    %div.list-group-item
+      %label{for:'timezone'}=t(:Timezone)
+      %select.form-control{name:'timezone', id:'timezone'}
+        %option{value:'', selected:@course[:timezone].to_s.empty?}="#{t(:System_timezone)} (#{Coeval::TimeZone.default})"
+        - TZInfo::Timezone.all_identifiers.each do |identifier|
+          %option{value:identifier, selected:@course[:timezone]==identifier}=identifier
     %div{:class=>"list-group-item"}
       %span{:class=>"titulo"}=t(:Active)
       %input{type:'checkbox', name:'active', checked:@course[:active]}

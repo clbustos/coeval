@@ -4,6 +4,14 @@ class Assessment < Sequel::Model
   def course
     Course[self[:course_id]]
   end
+  def local_datetime(field)
+    Coeval::TimeZone.local(self[field] || Time.now, course.timezone)
+  end
+
+  def formatted_datetime(field)
+    self[field].nil? ? '--' : "#{local_datetime(field).strftime('%Y-%m-%d %H:%M %:z')} (#{course.timezone})"
+  end
+
   def course_name
     course[:name]
   end

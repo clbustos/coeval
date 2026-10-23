@@ -175,6 +175,10 @@ RSpec.describe 'Courses controller' do
       expect(last_response).to be_redirect
       expect(last_response.location).to include("/assessment/#{assessment[:id]}")
       expect(assessment[:course_id]).to eq(scenario[:course][:id])
+      expect(assessment[:start_time_feedback]).to eq(assessment[:end_time_evaluation])
+      expect(assessment[:start_time_feedback]).to eq(assessment[:start_time_evaluation] + 30 * 24 * 60 * 60)
+      expect(assessment[:end_time_feedback]).to eq(assessment[:start_time_evaluation] + 60 * 24 * 60 * 60)
+      expect(assessment.feedback_moment?).to be(false)
     end
   end
 

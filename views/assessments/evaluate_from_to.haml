@@ -1,3 +1,4 @@
+=partial(:assessment_schedule, locals:{assessment:@assessment, fields:[:start_time_evaluation, :end_time_evaluation]})
 - assessment_complete=@cem.student_assessment[:complete]
 .header
   %h2=title(t(:evaluate_from_to, :assessment=>@assessment[:name], :student_from=>@student_from[:name], :student_to=>@student_to[:name]))

@@ -28,6 +28,10 @@
 
 # encoding:utf-8
 require 'sequel'
+
+# Preserve existing server-local database timestamps and normalize incoming instants.
+Sequel.database_timezone = :local
+Sequel.application_timezone = :local
 require 'logger'
 
 require 'dotenv'

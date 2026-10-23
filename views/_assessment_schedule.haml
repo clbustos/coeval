@@ -1,0 +1,5 @@
+%p.help-block="#{t(:Timezone)}: #{assessment.course.timezone}"
+- fields.each do |field|
+  %p
+    %strong="#{t(field)}: "
+    =assessment.formatted_datetime(field)

@@ -350,3 +350,14 @@ es:
   Welcome_guest: Bienvenido,&nbsp;visitante
   'Yes': Sí
   Select_an_option: Seleccione una opción
+
+  Timezone: Zona horaria
+  System_timezone: Usar configuración general
+  Invalid_timezone: Zona horaria inválida
+  Invalid_local_datetime: 'Fecha inválida o ambigua por un cambio de horario. Selecciona otra hora.'
+
+  Open_evaluation: Activar ingreso de información
+  Open_feedback: Iniciar feedback
+  Close_feedback: Cerrar feedback
+  Assessment_schedule_actions: Gestionar fechas de la coevaluación
+  Assessment_schedule_updated: Fechas de la coevaluación actualizadas

@@ -74,3 +74,17 @@ The admin user have password 'admin' by default. You should change as soon as po
 * [Sequel](https://github.com/jeremyevans/sequel) - Sequel is a simple, flexible, and powerful SQL database access toolkit for Ruby. It offers an abstraction layer and ORM functionalities, among other things.
 * [Bootstrap](https://getbootstrap.com/) -  Bootstrap is an open source toolkit for developing with HTML, CSS, and JS.
 * [RubyMine](https://www.jetbrains.com/ruby/) - An excellent Ruby IDE
+
+### Zonas horarias de los cursos
+
+`DEFAULT_TIMEZONE` configura la zona general con un identificador IANA (por defecto,
+`America/Santiago`). Cada curso permite elegir otra zona o heredar la general.
+Las fechas de evaluación y feedback se ingresan en la zona del curso; las vistas
+muestran la zona y el desplazamiento UTC de cada fecha, incluyendo horario de verano.
+Las horas inexistentes o ambiguas durante cambios de horario se rechazan.
+
+Ejecutar `bundle install` y `bundle exec rake db:migrate` al actualizar.
+Las fechas existentes conservan su interpretación en la zona local del servidor.
+Mantener esa zona del servidor/BD al desplegar: `DEFAULT_TIMEZONE` controla la
+presentación y el ingreso, no cambia la interpretación del almacenamiento histórico.
+Cambiar la zona del curso conserva los instantes de apertura y cierre ya guardados.

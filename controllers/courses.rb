@@ -141,14 +141,15 @@ post '/course/:id/assessments' do |id|
   end
 
   now=Time.now
+  evaluation_end=now + (60*60*24*30)
   assessment=Assessment.create(
     course_id:@course[:id],
     active:!params['active'].nil?,
     name:name,
     description:params['description'],
     start_time_evaluation:now,
-    end_time_evaluation:now + (60*60*24*30),
-    start_time_feedback:now,
+    end_time_evaluation:evaluation_end,
+    start_time_feedback:evaluation_end,
     end_time_feedback:now + (60*60*24*60),
     grade_system:params['grade_system'].to_s.strip.empty? ? 'chilean' : params['grade_system'].to_s.strip,
     grade_parameter_1:params['grade_parameter_1'].to_s.strip.empty? ? 60 : params['grade_parameter_1'].to_i,
@@ -179,9 +180,15 @@ end
 
 post '/course/:id/edit' do |id|
   halt 403 unless auth_to('course_admin')
+  timezone=params['timezone'].to_s.strip
+  begin
+    Coeval::TimeZone.zone(timezone.empty? ? Coeval::TimeZone.default : timezone)
+  rescue TZInfo::InvalidTimezoneIdentifier
+    halt 422, t(:Invalid_timezone)
+  end
   if params['name'].length>0
     if id=='new'
-      id=Course.insert(name:params["name"].strip,
+      id=Course.insert(timezone:timezone.empty? ? nil : timezone, name:params["name"].strip,
                             description:params["description"],
                             institution_id:params['institution'],
                             teacher_id:params['teacher'],
@@ -192,7 +199,7 @@ post '/course/:id/edit' do |id|
 
       raise Coeval::NoCourseIdError, id unless @course
 
-      @course.update(name:params["name"].strip,
+      @course.update(timezone:timezone.empty? ? nil : timezone, name:params["name"].strip,
                      description:params["description"],
                      active:!params["active"].nil?,
                      institution_id:params['institution'],

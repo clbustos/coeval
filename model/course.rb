@@ -1,4 +1,8 @@
 class Course < Sequel::Model
+  def timezone
+    self[:timezone].to_s.empty? ? Coeval::TimeZone.default : self[:timezone]
+  end
+
   # This is analog to ResponsePivot of Team
   # but have criteria per assessment
   class ResponsePivot

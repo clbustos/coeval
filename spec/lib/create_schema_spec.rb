@@ -22,7 +22,7 @@ RSpec.describe Coeval::CreateSchema do
       :assistant_teachers,
       :schema_info
     )
-    expect(db[:schema_info].get(:version)).to eq(8)
+    expect(db[:schema_info].get(:version)).to eq(9)
     expect(db[:authorizations].where(id:'course_assistant_monitor').count).to eq(1)
   end
 

@@ -17,10 +17,13 @@ def assessment_datetime_values(params)
     ac[field]=if !params["#{field_name}_nil"].nil? or params[field_name].to_s.strip.empty?
                 nil
               else
-                Time.parse(params[field_name])
+                Coeval::TimeZone.parse(params[field_name], @assessment.course.timezone)
               end
     ac
   end
+rescue ArgumentError, TZInfo::PeriodNotFound, TZInfo::AmbiguousTime
+  add_message(t(:Invalid_local_datetime), :error)
+  redirect back
 end
 
 def valid_assessment_datetime_order?(values)
@@ -541,3 +544,35 @@ end
 
 
 # @!endgroup
+
+# Only the course lead with management permission or a system administrator.
+def can_manage_assessment_schedule?(assessment)
+  user = User[session['user_id']]
+  user && (user[:role_id] == 'administrator' ||
+    (auth_to('course_admin') && assessment.course[:teacher_id] == user[:id]))
+end
+
+post '/assessment/:id/schedule/:action' do |id, action|
+  assessment = Assessment[id]
+  raise Coeval::NoAssessmentIdError, id unless assessment
+  halt 403 unless can_manage_assessment_schedule?(assessment)
+  halt 404 unless %w[open_evaluation open_feedback close_feedback].include?(action)
+
+  now = Time.now
+  week = 7 * 24 * 60 * 60
+  values = case action
+           when 'open_evaluation'
+             changes = {start_time_evaluation: now - 60 * 60}
+             [:start_time_feedback, :end_time_feedback].each do |field|
+               changes[field] = assessment[field] + week unless assessment[field].nil?
+             end
+             changes
+           when 'open_feedback'
+             {end_time_evaluation: now, start_time_feedback: now, end_time_feedback: now + week}
+           when 'close_feedback'
+             {end_time_feedback: now}
+           end
+  assessment.update(values)
+  add_message(t(:Assessment_schedule_updated))
+  redirect url("/assessment/#{assessment[:id]}")
+end

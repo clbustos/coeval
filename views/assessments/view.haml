@@ -22,7 +22,7 @@
   - [:start_time_evaluation, :end_time_evaluation, :start_time_feedback, :end_time_feedback].each do |field|
     %div{:class=>"list-group-item"}
       %span{:class=>"titulo"}=t(field)
-      =@assessment[field].nil? ? "--" : @assessment[field]
+      =@assessment.formatted_datetime(field)
   %div{:class=>"list-group-item"}
     %span{:class=>"titulo"}=t(:Grade_system)
     =@assessment[:grade_system]
@@ -32,6 +32,8 @@
   %div{:class=>"list-group-item"}
     %span{:class=>"titulo"}=t(:Grade_parameter_2)
     =@assessment[:grade_parameter_2]
+
+=partial(:assessment_schedule_buttons, locals:{assessment:@assessment})
 
 - if auth_to('assessment_admin') && !@assistant_assessment_access
   .btn-group{role:'group'}

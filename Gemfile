@@ -51,3 +51,5 @@ group :test do
   gem 'test-prof', :require => false
 end
 
+
+gem "tzinfo", "~> 2.0"
